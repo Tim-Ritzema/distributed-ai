@@ -4,7 +4,7 @@ Living list of decisions that need to be made. Each question lives here first; o
 
 ## Active ADRs
 
-- 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — **Event broker(s).** Valkey Streams vs NATS JetStream vs Postgres-backed vs MQTT. Likely two brokers, one per plane. (Phoenix.PubSub / Phoenix.Channels is now a stronger candidate for realtime fanout following ADR-0001 acceptance.)
+- 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — **Event broker(s).** Staged path leading: Phoenix realtime + Postgres outbox for the spike (Option F), graduate to NATS/JetStream behind the Brain (Option D) when concrete triggers — replay, durable consumers, cross-machine worker distribution — are real. Phoenix.PubSub / Phoenix.Channels for connected-client fanout *inside* the Brain; NATS/JetStream as a broker *behind* the Brain.
 - 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — **Vector store.** pgvector vs Qdrant.
 - 🟣 [ADR-0004](../05-decisions/0004-realtime-transport.md) — **Realtime transport.** Phoenix Channels leading (informed by accepted ADR-0001); plain WebSockets remains the fallback.
 - 🟣 [ADR-0005](../05-decisions/0005-device-telemetry-protocol.md) — **Device telemetry protocol.** MQTT favored for Pis.

@@ -4,6 +4,19 @@
 
 Phased delivery plan. Cloud-first early, local-later. **Family scoping is in Phase 0**, not retrofitted later.
 
+## Pre-Phase 0 — Phoenix control-plane spike
+
+Before full Phase 0 implementation, validate [ADR-0001](../05-decisions/0001-control-plane-language.md) with the smallest useful Phoenix vertical slice:
+
+- `GET /health` endpoint.
+- Postgres connection and one trivial migration/query.
+- One Phoenix Channel with a capability-gated topic join.
+- One server-pushed event to a SvelteKit client.
+- One Python script or worker call into the Brain over HTTP.
+- No NATS/JetStream requirement for the spike; [ADR-0002](../05-decisions/0002-event-broker.md) remains open until the broker boundary is decided explicitly.
+
+This spike is a learning-risk reducer, not a feature milestone. If Phoenix feels wrong after this slice, revisit [ADR-0001](../05-decisions/0001-control-plane-language.md) before building deeper.
+
 ## Phase 0 — Family-aware foundation
 
 The minimum viable system that's structurally correct from day one.
@@ -91,6 +104,6 @@ Through every phase:
 See [open-questions.md](open-questions.md) for the full live list. Highlights for early phases:
 
 - 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — control plane language. **Closed** before Phase 0 implementation: hybrid Elixir/Phoenix + Python AI workers.
-- 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — event broker. Needs to close before Phase 0.
+- 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — event broker. Needs to close before full Phase 0, not before the Phoenix spike.
 - 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — vector store. Needs to close before memory embeddings ship (Phase 0 or 1).
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — workflow engine. Needs to close before any workflows ship (Phase 1).

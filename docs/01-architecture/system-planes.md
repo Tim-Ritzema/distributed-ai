@@ -22,7 +22,7 @@ Five distinct concerns the system separates cleanly. Confusing them is the most 
 - **Workflow orchestration tracks long-running multi-step jobs** with retries, branching, and human-in-the-loop. Conflating this with "events" makes both worse.
 - **Persistent state is the source of truth.** Everything else can be reconstructed from it (or from the durable event log feeding it).
 
-Different planes can use different technologies. The likely outcome of [ADR-0002](../05-decisions/0002-event-broker.md) is two brokers — one optimized for realtime fanout, one for durable history — possibly bridged.
+Different planes can use different technologies. [ADR-0002](../05-decisions/0002-event-broker.md) may choose one broker, separate realtime/durable technologies, or a staged path that starts with Phoenix realtime plus Postgres durable history and adds NATS/JetStream later if needed.
 
 ## How the planes interact
 

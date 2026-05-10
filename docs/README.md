@@ -29,6 +29,8 @@ A self-hosted, family-scoped personal AI assistant for the Ritzema family. Runs 
 
 Beyond Postgres (ADR-0007) and control-plane language (ADR-0001), no other technology choices are committed. Event broker, vector store, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider are all tracked as ADRs in [05-decisions/](05-decisions/).
 
+**Next concrete step:** the [Pre-Phase 0 Phoenix control-plane spike](04-roadmap/phases.md) — a tightly-scoped vertical slice (health endpoint, capability-gated Phoenix Channel, server-pushed event to a SvelteKit client, Python worker over HTTP) that validates ADR-0001 in code without forcing ADR-0002 to close.
+
 ## Index
 
 ### 00-orientation/
@@ -67,9 +69,9 @@ Beyond Postgres (ADR-0007) and control-plane language (ADR-0001), no other techn
 ### 05-decisions/
 - [0000-template.md](05-decisions/0000-template.md) — ADR template
 - [0001-control-plane-language.md](05-decisions/0001-control-plane-language.md) 🟢 hybrid Elixir+Python accepted
-- [0002-event-broker.md](05-decisions/0002-event-broker.md) 🔵
+- [0002-event-broker.md](05-decisions/0002-event-broker.md) 🟣 staged Phoenix + Postgres outbox → NATS later
 - [0003-vector-store.md](05-decisions/0003-vector-store.md) 🔵
-- [0004-realtime-transport.md](05-decisions/0004-realtime-transport.md) 🔵
+- [0004-realtime-transport.md](05-decisions/0004-realtime-transport.md) 🟣 Phoenix Channels leading
 - [0005-device-telemetry-protocol.md](05-decisions/0005-device-telemetry-protocol.md) 🟣 MQTT favored for Pis
 - [0006-workflow-engine.md](05-decisions/0006-workflow-engine.md) 🟣 Prefect leading
 - [0007-persistent-state-postgres.md](05-decisions/0007-persistent-state-postgres.md) 🟢 accepted

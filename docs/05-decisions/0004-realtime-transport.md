@@ -61,6 +61,8 @@ If rejected, the fallback is **Option A — plain WebSockets**. Building Phoenix
 
 SSE (Option C) is a fallback for narrow cases (long-running one-way streams) but not the primary realtime transport.
 
+**Independent of the broker behind the Brain.** This ADR governs the Brain ↔ SvelteKit client transport. Whichever broker [ADR-0002](0002-event-broker.md) picks (Phoenix.PubSub-only, NATS/JetStream, Postgres outbox, or staged) lives *behind* the Brain — clients never subscribe to it directly. The Brain remains the capability-enforcement point for client-visible events regardless.
+
 ## Consequences
 
 If Phoenix Channels accepted:
