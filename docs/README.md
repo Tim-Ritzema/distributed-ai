@@ -1,0 +1,79 @@
+# distributed-ai
+
+A self-hosted, family-scoped personal AI assistant for the Ritzema family. Runs on owned hardware first; cloud is a bootstrap accelerator only, not a destination.
+
+## Reading order
+
+1. [00-orientation/](00-orientation/) — mission, principles, glossary
+2. [01-architecture/](01-architecture/) — components, planes, events, data model
+3. [02-domains/](02-domains/) — identity, privacy, registration, perception, memory, work
+4. [04-roadmap/](04-roadmap/) — phases and open questions
+5. [05-decisions/](05-decisions/) — ADRs (active design decisions)
+6. [99-reference/](99-reference/) — pointers to source repos and attribution
+
+## Doc status legend
+
+| Marker | Meaning |
+|---|---|
+| 🟢 Accepted | Decided. Code may rely on it. |
+| 🟣 Proposed | Recommendation made; awaiting confirmation. |
+| 🔵 Open | Options laid out; no decision yet. |
+| 🟡 Stub | TODO line only — placeholder for future content. |
+
+## Currently accepted decisions
+
+| Decision | ADR |
+|---|---|
+| Postgres is the source of truth for durable app state | [ADR-0007](05-decisions/0007-persistent-state-postgres.md) |
+
+No other technology choices are committed. Control-plane language, event broker, vector store, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider are all tracked as ADRs in [05-decisions/](05-decisions/).
+
+## Index
+
+### 00-orientation/
+- [overview.md](00-orientation/overview.md) — mission, family roster, non-goals
+- [principles.md](00-orientation/principles.md) — the seven architectural invariants
+- [glossary.md](00-orientation/glossary.md) — terms, principal types, capability syntax
+
+### 01-architecture/
+- [system-overview.md](01-architecture/system-overview.md) — components and runtime loops
+- [physical-topology.md](01-architecture/physical-topology.md) — hardware roles and network shape
+- [system-planes.md](01-architecture/system-planes.md) — the five planes the system separates
+- [api-and-transport.md](01-architecture/api-and-transport.md) — HTTP / WebSocket / push rules
+- [event-system.md](01-architecture/event-system.md) — broker-agnostic envelope and concerns
+- [data-model.md](01-architecture/data-model.md) — entities, relationships, role distinctions
+- [brain-to-nerve.md](01-architecture/brain-to-nerve.md) — HDTS as future influence
+- [ai-orchestration.md](01-architecture/ai-orchestration.md) — model routing, tools, cloud egress
+- [example-flows.md](01-architecture/example-flows.md) — three end-to-end walkthroughs
+
+### 02-domains/
+- [identity-and-access.md](02-domains/identity-and-access.md) — principals, roles, default rules
+- [security-and-privacy.md](02-domains/security-and-privacy.md) — privacy tiers, the rash problem, biometrics
+- [client-registration.md](02-domains/client-registration.md) — pairing, identity, capabilities, revocation
+- [perception-and-presence.md](02-domains/perception-and-presence.md) — raw observations vs derived presence
+- [projects-and-backlog.md](02-domains/projects-and-backlog.md) — work items and the autonomous heartbeat
+- [memory-and-context.md](02-domains/memory-and-context.md) — categories, retention, cloud boundaries
+- [background-processing.md](02-domains/background-processing.md) — workflow role and lifecycle
+
+### 03-operations/
+- [deployment.md](03-operations/deployment.md) 🟡
+- [observability.md](03-operations/observability.md) 🟡
+
+### 04-roadmap/
+- [phases.md](04-roadmap/phases.md) — phased delivery plan
+- [open-questions.md](04-roadmap/open-questions.md) — living list, links to ADRs
+
+### 05-decisions/
+- [0000-template.md](05-decisions/0000-template.md) — ADR template
+- [0001-control-plane-language.md](05-decisions/0001-control-plane-language.md) 🟣 hybrid Elixir+Python leading
+- [0002-event-broker.md](05-decisions/0002-event-broker.md) 🔵
+- [0003-vector-store.md](05-decisions/0003-vector-store.md) 🔵
+- [0004-realtime-transport.md](05-decisions/0004-realtime-transport.md) 🔵
+- [0005-device-telemetry-protocol.md](05-decisions/0005-device-telemetry-protocol.md) 🟣 MQTT favored for Pis
+- [0006-workflow-engine.md](05-decisions/0006-workflow-engine.md) 🟣 Prefect leading
+- [0007-persistent-state-postgres.md](05-decisions/0007-persistent-state-postgres.md) 🟢 accepted
+- [0008-mobile-push-notifications.md](05-decisions/0008-mobile-push-notifications.md) 🔵 (Phase 3)
+
+### 99-reference/
+- [reference-repos.md](99-reference/reference-repos.md) — local-vida and mia-sempre pointers
+- [concept-attribution.md](99-reference/concept-attribution.md) — what was kept, adapted, deferred, rejected
