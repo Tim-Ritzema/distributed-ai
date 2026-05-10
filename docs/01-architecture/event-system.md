@@ -93,5 +93,5 @@ The broker chosen in [ADR-0002](../05-decisions/0002-event-broker.md) must addre
 
 ## Open Questions
 
-- 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — broker for realtime + durable planes.
+- 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — broker for realtime + durable planes, staged path proposed.
 - Topic naming convention. Provisional: dot-separated lowercase tokens, no underscores. Typically `<domain>.<entity>.<verb>` (e.g., `perception.face.seen`, `work-item.task.assigned`), but `<domain>.<verb>` (e.g., `presence.changed`, `job.progress`) and `<domain>.<state>` (e.g., `job.succeeded`) are also valid where the entity is implicit. To be ratified after first implementation pass.

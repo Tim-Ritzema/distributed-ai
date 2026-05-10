@@ -77,6 +77,6 @@ These are documented here at the conceptual level. Mechanics live in the Elixir/
 
 ## Open Questions
 
-- 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — Event broker(s).
+- 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — Event broker(s), staged path proposed.
 - 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — Vector store.
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — Workflow engine (Prefect leading).

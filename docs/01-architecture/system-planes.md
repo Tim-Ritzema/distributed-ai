@@ -8,8 +8,8 @@ Five distinct concerns the system separates cleanly. Confusing them is the most 
 
 | Plane | Purpose | Latency target | Tech status |
 |---|---|---|---|
-| Realtime event routing | Low-latency fanout to live subscribers (assistant tokens, avatar state, presence updates) | < 100ms | 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) |
-| Durable event history | Append-only log for audit, replay, analytics, workflow correlation | Seconds | 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) |
+| Realtime event routing | Low-latency fanout to live subscribers (assistant tokens, avatar state, presence updates) | < 100ms | 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) |
+| Durable event history | Append-only log for audit, replay, analytics, workflow correlation | Seconds | 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) |
 | Device telemetry | High-volume sensor / heartbeat ingest from Pis and IoT-class devices | Seconds | 🟣 [ADR-0005](../05-decisions/0005-device-telemetry-protocol.md) (MQTT favored) |
 | Workflow orchestration | Multi-step Python jobs with retries, scheduling, visibility | Minutes-to-hours | 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) (Prefect leading) |
 | Persistent app state | Durable CRUD truth | Transactional | 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — Postgres |
@@ -47,6 +47,6 @@ A typical event flow touches multiple planes:
 
 ## Open Questions
 
-- 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — realtime + durable broker(s).
+- 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — realtime + durable broker(s), staged path proposed.
 - 🟣 [ADR-0005](../05-decisions/0005-device-telemetry-protocol.md) — device telemetry protocol (MQTT favored).
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — workflow engine (Prefect leading).

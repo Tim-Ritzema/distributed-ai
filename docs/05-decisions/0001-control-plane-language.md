@@ -68,7 +68,7 @@ This decision does **not** reject NATS/JetStream. It deliberately keeps the brok
 - Cross-language contracts get explicit schema validation (probably a shared schema repo or generated bindings).
 - [ADR-0004](0004-realtime-transport.md) — Phoenix Channels become the proposed realtime transport for SvelteKit clients, with plain WebSockets remaining as a viable fallback.
 - [ADR-0006](0006-workflow-engine.md) — Oban becomes a real candidate for simple Elixir-side background jobs (sweeps, schedule ticks), complementary to Prefect for Python AI workflows.
-- [ADR-0002](0002-event-broker.md) — Phoenix.PubSub / Phoenix.Channels becomes a stronger candidate for connected-client fanout inside the Brain, but NATS/JetStream remains a valid broker candidate behind the Brain. The broker boundary and durable history choice remain open.
+- [ADR-0002](0002-event-broker.md) — Phoenix.PubSub / Phoenix.Channels becomes a stronger candidate for connected-client fanout inside the Brain, but NATS/JetStream remains a valid broker candidate behind the Brain. The broker boundary and durable history choice remain proposed, not accepted.
 - Operational footprint adds an Elixir runtime alongside Python; deployment doc ([03-operations/deployment.md](../03-operations/deployment.md)) firms up after [ADR-0002](0002-event-broker.md) closes.
 
 ## References

@@ -85,7 +85,7 @@ Decision criteria still in play for full acceptance:
 - How many concurrent subscribers does the Brain need to fanout to in steady state? (Probably tens, not thousands. This favors lighter-weight options.)
 - How important is replay? (Important for audit and workflow correlation. Argues for a real durable plane.)
 - How much do we care about transactional guarantees between durable state and event history? (Probably a lot. Argues for outbox pattern.)
-- ADR-0001 has accepted Elixir/Phoenix for the control plane. Phoenix.PubSub / Phoenix.Channels is now a stronger candidate for realtime fanout, but **ADR-0002 remains open** for the realtime/durable broker boundary and the durable history choice. Don't accidentally close this ADR by leaning on Phoenix.PubSub for all of it.
+- ADR-0001 has accepted Elixir/Phoenix for the control plane. Phoenix.PubSub / Phoenix.Channels is now a stronger candidate for realtime fanout, but **ADR-0002 remains proposed, not accepted** for the realtime/durable broker boundary and the durable history choice. Don't accidentally accept this ADR by leaning on Phoenix.PubSub for all of it.
 
 Provisional lean: Option F for the first Phoenix validation pass, then Option D if/when the system needs a real broker behind the Brain. The trigger for NATS/JetStream is not "Phoenix exists"; it is a concrete need for broker-level replay, durable consumers, queue groups, cross-machine worker distribution, or richer redelivery semantics.
 
