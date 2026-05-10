@@ -1,6 +1,6 @@
 # ADR-0001: Control plane language
 
-**Status:** 🟣 proposed (hybrid Elixir/OTP control plane + Python workers leading)
+**Status:** 🟢 accepted (hybrid Elixir/OTP control plane + Python AI workers)
 
 ## Context
 
@@ -54,27 +54,22 @@ Like A, but with NATS as a first-class event bus on the Elixir side, possibly di
 
 ## Decision
 
-**Proposed:** Option A (hybrid Elixir/OTP control plane + Python AI workers). The control plane's shape — long-lived sessions, supervised loops, concurrent fanout — fits OTP. The AI work — vision, transcription, LLMs — fits Python. Two languages is a real cost, but it's a cost that buys reliability and concurrency story that matter for an always-on family system.
+**Accepted: Option A — hybrid Elixir/OTP control plane + Python AI workers.**
 
-Awaiting confirmation; if rejected, fallback is Option B for speed.
+The control plane's shape — long-lived sessions, supervised loops, concurrent fanout — fits OTP. The AI work — vision, transcription, LLMs — fits Python. Two languages is a real cost, but it's a cost that buys reliability and concurrency story that matter for an always-on family system.
 
 ## Consequences
 
-If accepted:
-
-- The Brain is an Elixir application, likely Phoenix-based for HTTP + WebSockets (without LiveView).
+- The Brain is an Elixir application, Phoenix-based for HTTP + WebSockets. **Phoenix LiveView is not used** — the UI runs on SvelteKit.
 - Python workers communicate with the Brain over the event bus and HTTP.
 - Cross-language contracts get explicit schema validation (probably a shared schema repo or generated bindings).
-- [ADR-0004](0004-realtime-transport.md) gains a strong default of Phoenix Channels for SvelteKit clients (but plain WS remains viable).
-
-If rejected in favor of B:
-
-- Single-language project, faster to ship Phase 0.
-- More careful design needed for the supervised-loop story (asyncio + task supervision).
-- [ADR-0004](0004-realtime-transport.md) defaults to plain WebSockets.
+- [ADR-0004](0004-realtime-transport.md) — Phoenix Channels become the proposed realtime transport for SvelteKit clients, with plain WebSockets remaining as a viable fallback.
+- [ADR-0006](0006-workflow-engine.md) — Oban becomes a real candidate for simple Elixir-side background jobs (sweeps, schedule ticks), complementary to Prefect for Python AI workflows.
+- [ADR-0002](0002-event-broker.md) — Phoenix.PubSub / Phoenix.Channels becomes a stronger candidate for the realtime fanout side, but the broker boundary and durable history choice remain open.
+- Operational footprint adds an Elixir runtime alongside Python; deployment doc ([03-operations/deployment.md](../03-operations/deployment.md)) firms up after [ADR-0002](0002-event-broker.md) closes.
 
 ## References
 
 - [01-architecture/system-overview.md](../01-architecture/system-overview.md) — control plane component description.
-- [04-roadmap/phases.md](../04-roadmap/phases.md) — needs to close before Phase 0 implementation begins.
-- [ADR-0004](0004-realtime-transport.md) — depends on this decision.
+- [04-roadmap/phases.md](../04-roadmap/phases.md) — closed before Phase 0 implementation.
+- [ADR-0004](0004-realtime-transport.md) — informed by this decision.

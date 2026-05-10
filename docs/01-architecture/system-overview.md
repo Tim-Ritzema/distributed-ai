@@ -50,7 +50,7 @@ Name the major components, their responsibilities, and the runtime loops that ho
 
 ## Component responsibilities
 
-- **Brain** — Always-on control plane. Handles device sessions, capability checks, event routing, and the agent runtime loops. Language choice is open ([ADR-0001](../05-decisions/0001-control-plane-language.md)); strong candidate is a hybrid Elixir/OTP control plane with Python AI workers.
+- **Brain** — Always-on control plane. Handles device sessions, capability checks, event routing, and the agent runtime loops. **Hybrid Elixir/Phoenix/OTP control plane + Python AI workers** per [ADR-0001](../05-decisions/0001-control-plane-language.md). Phoenix LiveView is not used; the UI runs on SvelteKit.
 - **AI/ML Workers** — Python processes that do the heavy lifting: vision, face recognition, transcription, embeddings, LLM orchestration, research, coding agents, data analysis. Workers are **not** the event backbone; they consume from it and emit progress back to it.
 - **Edge Devices** — Pis with cameras, static installs, mobile phones, laptops. Each one is a registered client under [client-registration.md](../02-domains/client-registration.md).
 - **Web/Mobile Clients** — SvelteKit on the web; native mobile (TBD) on phones. Talk to the Brain over HTTP for CRUD and WebSockets for live updates. See [api-and-transport.md](api-and-transport.md).
@@ -68,15 +68,15 @@ The Brain runs three persistent loops, a concept carried over from mia-sempre:
 - **Idle loop** — When no events demand immediate attention, the brain runs reflection and planning passes — summarizing recent activity, surfacing follow-ups, advancing background reasoning on assigned work items.
 - **Maintenance loop** — Periodic housekeeping: retention sweeps on memories and raw observations, cache warmup, capability re-checks against current grants, audit-log compaction.
 
-These are documented here at the conceptual level. Mechanics belong to whichever language wins [ADR-0001](../05-decisions/0001-control-plane-language.md) — Elixir/OTP supervised processes, Python asyncio tasks, or a hybrid.
+These are documented here at the conceptual level. Mechanics live in the Elixir/OTP control plane per [ADR-0001](../05-decisions/0001-control-plane-language.md) — supervised processes for the event and idle loops, scheduled tasks for the maintenance loop. Python AI workers consume off the event bus rather than running these loops directly.
 
 ## Known Decisions
 
+- 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — Hybrid Elixir/Phoenix control plane + Python AI workers.
 - 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — Postgres for durable app state.
 
 ## Open Questions
 
-- 🟣 [ADR-0001](../05-decisions/0001-control-plane-language.md) — Control plane language (hybrid Elixir+Python leading).
 - 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — Event broker(s).
 - 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — Vector store.
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — Workflow engine (Prefect leading).

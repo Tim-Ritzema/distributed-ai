@@ -34,7 +34,7 @@ A WebSocket connection authenticates with a session token derived from the clien
 
 **Rule: WebSockets are not the default.** Don't reach for them just because something feels live. If a client can poll twice per minute over HTTP and get the same UX, do that instead.
 
-The choice between **plain WebSockets** and **Phoenix Channels** for SvelteKit clients depends on [ADR-0001](../05-decisions/0001-control-plane-language.md) (control plane language) and is tracked separately in [ADR-0004](../05-decisions/0004-realtime-transport.md). **Phoenix LiveView is explicitly excluded** — the UI runs on SvelteKit regardless.
+Because [ADR-0001](../05-decisions/0001-control-plane-language.md) accepted Elixir/Phoenix for the control plane, [ADR-0004](../05-decisions/0004-realtime-transport.md) now proposes **Phoenix Channels** as the realtime transport for SvelteKit clients; **plain WebSockets** remain the fallback. **Phoenix LiveView is explicitly excluded** — the UI runs on SvelteKit regardless.
 
 ### Device telemetry (Pis / IoT)
 
@@ -64,7 +64,7 @@ Provider choice (APNS direct, FCM, OneSignal, self-hosted webpush) is deferred t
 
 ## Open Questions
 
-- 🟣 [ADR-0001](../05-decisions/0001-control-plane-language.md) — control plane language affects realtime transport options.
-- 🔵 [ADR-0004](../05-decisions/0004-realtime-transport.md) — plain WebSockets vs Phoenix Channels for SvelteKit.
+- 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — control plane language: Elixir/Phoenix accepted.
+- 🟣 [ADR-0004](../05-decisions/0004-realtime-transport.md) — plain WebSockets vs Phoenix Channels for SvelteKit (Phoenix Channels leading).
 - 🟣 [ADR-0005](../05-decisions/0005-device-telemetry-protocol.md) — MQTT vs WebSockets vs HTTP polling for Pis.
 - 🔵 [ADR-0008](../05-decisions/0008-mobile-push-notifications.md) — push provider for backgrounded mobile clients.

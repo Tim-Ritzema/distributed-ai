@@ -4,16 +4,16 @@ Living list of decisions that need to be made. Each question lives here first; o
 
 ## Active ADRs
 
-- 🟣 [ADR-0001](../05-decisions/0001-control-plane-language.md) — **Control plane language.** Hybrid Elixir/OTP + Python workers leading. Phoenix LiveView excluded. SvelteKit is the UI regardless.
-- 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — **Event broker(s).** Valkey Streams vs NATS JetStream vs Postgres-backed vs MQTT. Likely two brokers, one per plane.
+- 🔵 [ADR-0002](../05-decisions/0002-event-broker.md) — **Event broker(s).** Valkey Streams vs NATS JetStream vs Postgres-backed vs MQTT. Likely two brokers, one per plane. (Phoenix.PubSub / Phoenix.Channels is now a stronger candidate for realtime fanout following ADR-0001 acceptance.)
 - 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — **Vector store.** pgvector vs Qdrant.
-- 🔵 [ADR-0004](../05-decisions/0004-realtime-transport.md) — **Realtime transport.** Plain WebSockets vs Phoenix Channels for SvelteKit.
+- 🟣 [ADR-0004](../05-decisions/0004-realtime-transport.md) — **Realtime transport.** Phoenix Channels leading (informed by accepted ADR-0001); plain WebSockets remains the fallback.
 - 🟣 [ADR-0005](../05-decisions/0005-device-telemetry-protocol.md) — **Device telemetry protocol.** MQTT favored for Pis.
-- 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — **Workflow engine.** Prefect leading.
+- 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — **Workflow engine.** Prefect leading for Python AI workflows; Oban now relevant for simple Elixir-side jobs.
 - 🔵 [ADR-0008](../05-decisions/0008-mobile-push-notifications.md) — **Mobile push transport.** APNS / FCM / OneSignal / self-hosted. Phase 3 concern.
 
 ## Accepted
 
+- 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — Hybrid Elixir/Phoenix control plane + Python AI workers (LiveView excluded; SvelteKit UI).
 - 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — Postgres for durable app state.
 
 ## Pre-ADR questions (not yet ripe)

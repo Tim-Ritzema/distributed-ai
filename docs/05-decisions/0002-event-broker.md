@@ -67,7 +67,7 @@ This is more about [ADR-0005](0005-device-telemetry-protocol.md) — device tele
 - How many concurrent subscribers does the Brain need to fanout to in steady state? (Probably tens, not thousands. This favors lighter-weight options.)
 - How important is replay? (Important for audit and workflow correlation. Argues for a real durable plane.)
 - How much do we care about transactional guarantees between durable state and event history? (Probably a lot. Argues for outbox pattern.)
-- Does [ADR-0001](0001-control-plane-language.md) bias one way? (Elixir + Phoenix.PubSub naturally covers realtime; durable history still needs a home.)
+- ADR-0001 has accepted Elixir/Phoenix for the control plane. Phoenix.PubSub / Phoenix.Channels is now a stronger candidate for realtime fanout, but **ADR-0002 remains open** for the realtime/durable broker boundary and the durable history choice. Don't accidentally close this ADR by leaning on Phoenix.PubSub for all of it.
 
 Provisional lean: Option D (hybrid NATS + Postgres outbox), but no commitment.
 

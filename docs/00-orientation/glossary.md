@@ -43,7 +43,7 @@ Terms appear here once and are used consistently across all docs. When a doc int
 
 ## System concepts
 
-- **Control plane** — the always-on service that handles device sessions, event routing, and orchestration. Language is open ([ADR-0001](../05-decisions/0001-control-plane-language.md)).
+- **Control plane** — the always-on service that handles device sessions, event routing, and orchestration. Elixir/Phoenix per [ADR-0001](../05-decisions/0001-control-plane-language.md), with Python workers handling AI/ML tasks.
 - **Plane** — one of five separated concerns: realtime event routing, durable event history, device telemetry, workflow orchestration, persistent app state. See [system-planes.md](../01-architecture/system-planes.md).
 - **HDTS layer** — Hierarchical Delegation with Temporal Stratification. L4 (consciousness, ~seconds) → L1 (reflexes, ~microseconds). Day-one is L4 only. See [brain-to-nerve.md](../01-architecture/brain-to-nerve.md).
 - **Agent runtime loops** — the brain runs three: an **event loop** (consume + dispatch), an **idle loop** (reflection / planning when no events demand attention), a **maintenance loop** (retention sweeps, cache warmup, capability re-checks).

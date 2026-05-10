@@ -1,10 +1,10 @@
 # ADR-0004: Realtime transport
 
-**Status:** 🔵 open
+**Status:** 🟣 proposed (Phoenix Channels leading; awaiting confirmation)
 
 ## Context
 
-SvelteKit clients (web portal, possibly mobile via webview) need a realtime push channel from the Brain ([01-architecture/api-and-transport.md](../01-architecture/api-and-transport.md)). The choice of transport interacts with [ADR-0001](0001-control-plane-language.md).
+SvelteKit clients (web portal, possibly mobile via webview) need a realtime push channel from the Brain ([01-architecture/api-and-transport.md](../01-architecture/api-and-transport.md)). [ADR-0001](0001-control-plane-language.md) is now accepted (hybrid Elixir/Phoenix + Python AI workers), which makes Phoenix Channels the natural fit on the realtime UI side.
 
 **Phoenix LiveView is explicitly excluded** — UI rendering is the SvelteKit client's job.
 
@@ -25,7 +25,7 @@ Standard WebSocket protocol, custom message framing.
 
 ### Option B — Phoenix Channels
 
-If [ADR-0001](0001-control-plane-language.md) chooses Elixir, Phoenix Channels are the natural realtime layer.
+With [ADR-0001](0001-control-plane-language.md) accepting Elixir/Phoenix, Phoenix Channels are the natural realtime layer.
 
 - **Pros:**
   - Built-in topic multiplexing, ack semantics, presence tracking, reconnect.
@@ -49,28 +49,32 @@ One-way push, simpler than WebSockets.
 
 ## Decision
 
-**Open.** Strongly conditional on [ADR-0001](0001-control-plane-language.md):
+**Proposed: Option B — Phoenix Channels** for SvelteKit clients. Recommendation made; awaiting confirmation.
 
-- If Elixir wins ADR-0001: lean toward Phoenix Channels (Option B) for the operational features it brings.
-- If Python wins ADR-0001: lean toward plain WebSockets (Option A); building Phoenix-equivalent features in Python is more friction than it's worth.
+Rationale:
+
+- ADR-0001 accepted Elixir/Phoenix for the control plane; Phoenix Channels is the matching realtime layer.
+- Built-in topic multiplexing, ack semantics, presence tracking, and reconnect are all things we'd otherwise build.
+- Tightly integrated with `Phoenix.PubSub` for cross-process fanout inside the Brain.
+
+If rejected, the fallback is **Option A — plain WebSockets**. Building Phoenix-equivalent features over plain WS is real work but not impossible.
 
 SSE (Option C) is a fallback for narrow cases (long-running one-way streams) but not the primary realtime transport.
 
 ## Consequences
 
-If Phoenix Channels:
+If Phoenix Channels accepted:
 
-- SvelteKit clients use a Phoenix-aware client library. Modest learning curve.
+- SvelteKit clients use a Phoenix-aware client library (e.g., `phoenix-js`). Modest learning curve.
 - Backend can multiplex many topics over one socket per client.
-- Migration to a non-Elixir backend later is real work.
+- Migration to a non-Elixir backend later would be real work — but the rest of the system is now committed to Elixir, so this risk is small.
 
-If plain WebSockets:
+If rejected in favor of plain WebSockets:
 
 - We define our own message envelope (probably mirroring the event envelope in [01-architecture/event-system.md](../01-architecture/event-system.md)).
 - Need to build reconnect, heartbeat, ack semantics ourselves.
-- Backend-agnostic.
 
 ## References
 
 - [01-architecture/api-and-transport.md](../01-architecture/api-and-transport.md)
-- [ADR-0001](0001-control-plane-language.md) — strongly influences this decision.
+- [ADR-0001](0001-control-plane-language.md) — informed by accepted ADR-0001.

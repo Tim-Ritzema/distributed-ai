@@ -24,7 +24,7 @@ The system needs a workflow engine for multi-step Python AI/ML jobs ([02-domains
 
 ### Option B — Oban (Elixir-side)
 
-If [ADR-0001](0001-control-plane-language.md) chooses Elixir for the control plane and the workflow needs are simple, Oban is a Postgres-backed job queue with retry/scheduling.
+Since [ADR-0001](0001-control-plane-language.md) accepted hybrid Elixir+Python, Oban — a Postgres-backed job queue with retry/scheduling — is a real candidate for simple Elixir-side background jobs.
 
 - **Pros:**
   - Lives in Postgres; transactional with the rest of the data.
@@ -59,7 +59,7 @@ Rationale:
 - We need real workflow orchestration (multi-step, retries, branching, progress events), not just a job queue.
 - Local-vida proved the pattern works for similar workloads.
 
-**Oban** stays a candidate for **simple Elixir-side background jobs** if [ADR-0001](0001-control-plane-language.md) chooses Elixir. For example, the Brain's maintenance loop sweeps could be Oban jobs while AI work goes to Prefect. This is not a competition between Oban and Prefect; they serve different layers.
+**Oban** is a candidate for **simple Elixir-side background jobs** since [ADR-0001](0001-control-plane-language.md) accepted hybrid Elixir+Python. For example, the Brain's maintenance loop sweeps could be Oban jobs while AI work goes to Prefect. This is not a competition between Oban and Prefect; they serve different layers.
 
 **Temporal** is parked as a future option only. Trigger to revisit: Prefect's durability for hours-to-days workflows proves insufficient, or a need for cross-team workflow versioning emerges (unlikely at family scale).
 
@@ -76,4 +76,4 @@ If Prefect accepted:
 
 - [02-domains/background-processing.md](../02-domains/background-processing.md) — workflow runner role.
 - [01-architecture/system-planes.md](../01-architecture/system-planes.md) — workflow orchestration plane.
-- [ADR-0001](0001-control-plane-language.md) — affects whether Oban becomes relevant for the Elixir side.
+- [ADR-0001](0001-control-plane-language.md) — accepted hybrid Elixir+Python; makes Oban a real candidate for the Elixir side.

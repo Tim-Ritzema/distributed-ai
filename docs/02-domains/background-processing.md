@@ -110,7 +110,7 @@ When a workflow completes:
 | Engine | Status | Use case |
 |---|---|---|
 | Prefect | 🟣 Leading | Python-native, good local story, mature retries/scheduling/visibility. The default day-one. |
-| Oban | considered | Only if [ADR-0001](../05-decisions/0001-control-plane-language.md) chooses Elixir control plane and workflow needs are simple. |
+| Oban | candidate (Elixir-side) | Relevant since [ADR-0001](../05-decisions/0001-control-plane-language.md) accepted hybrid Elixir+Python; Oban fits simple Elixir-side jobs (maintenance loop sweeps, schedule ticks). Complementary to Prefect for AI work, not in competition. |
 | Temporal | future-only | If Prefect's durability for long-running workflows proves insufficient. |
 
 See [ADR-0006](../05-decisions/0006-workflow-engine.md).

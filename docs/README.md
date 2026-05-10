@@ -25,8 +25,9 @@ A self-hosted, family-scoped personal AI assistant for the Ritzema family. Runs 
 | Decision | ADR |
 |---|---|
 | Postgres is the source of truth for durable app state | [ADR-0007](05-decisions/0007-persistent-state-postgres.md) |
+| Hybrid Elixir/Phoenix control plane + Python AI workers (LiveView excluded; SvelteKit UI) | [ADR-0001](05-decisions/0001-control-plane-language.md) |
 
-No other technology choices are committed. Control-plane language, event broker, vector store, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider are all tracked as ADRs in [05-decisions/](05-decisions/).
+Beyond Postgres (ADR-0007) and control-plane language (ADR-0001), no other technology choices are committed. Event broker, vector store, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider are all tracked as ADRs in [05-decisions/](05-decisions/).
 
 ## Index
 
@@ -65,7 +66,7 @@ No other technology choices are committed. Control-plane language, event broker,
 
 ### 05-decisions/
 - [0000-template.md](05-decisions/0000-template.md) — ADR template
-- [0001-control-plane-language.md](05-decisions/0001-control-plane-language.md) 🟣 hybrid Elixir+Python leading
+- [0001-control-plane-language.md](05-decisions/0001-control-plane-language.md) 🟢 hybrid Elixir+Python accepted
 - [0002-event-broker.md](05-decisions/0002-event-broker.md) 🔵
 - [0003-vector-store.md](05-decisions/0003-vector-store.md) 🔵
 - [0004-realtime-transport.md](05-decisions/0004-realtime-transport.md) 🔵
