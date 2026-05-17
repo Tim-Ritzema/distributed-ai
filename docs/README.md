@@ -11,6 +11,10 @@ A self-hosted, family-scoped personal AI assistant for the Ritzema family. Runs 
 5. [05-decisions/](05-decisions/) — ADRs (active design decisions)
 6. [99-reference/](99-reference/) — pointers to source repos and attribution
 
+## Prototypes
+
+- [`../prototypes/avatar-lab/`](../prototypes/avatar-lab/) — static Wubblefazz avatar/perception client for `home.wubblefazz.com`.
+
 ## Doc status legend
 
 | Marker | Meaning |

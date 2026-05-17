@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wubblefazz Avatar Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .scanline {
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(125, 211, 252, 0.22),
+        transparent
+      );
+      animation: scan 2.6s linear infinite;
+    }
+
+    @keyframes scan {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(100%); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-white lg:overflow-hidden">
+  <main class="grid min-h-screen gap-5 p-5 lg:h-screen lg:grid-cols-[minmax(360px,480px)_1fr]">
+    <aside class="flex min-h-0 flex-col gap-5 overflow-y-auto rounded-[2rem] border border-white/10 bg-slate-900/70 p-5 shadow-2xl shadow-black/30 backdrop-blur">
+      <div class="inline-flex rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm text-cyan-100 shadow-lg shadow-cyan-950/20">
+        local camera awareness prototype
+      </div>
+
+      <div class="space-y-4">
+        <h1 id="headline" class="text-5xl font-bold tracking-tight text-white">Avatar Lab</h1>
+        <p class="text-base leading-7 text-slate-300">
+          The page watches for a face or person locally in the browser, estimates its 0-100%
+          horizontal position, and uses that signal to steer the avatar stage.
+        </p>
+      </div>
+
+      <div class="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-black aspect-video">
+        <video id="camera-feed" class="h-full w-full object-contain" autoplay playsinline muted></video>
+        <canvas id="face-overlay" class="pointer-events-none absolute inset-0 h-full w-full"></canvas>
+        <div class="scanline pointer-events-none absolute inset-x-0 top-0 h-24 opacity-70"></div>
+        <div id="camera-message" class="absolute inset-x-4 bottom-4 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-slate-200 backdrop-blur">
+          Starting camera...
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+          <p class="text-slate-400">camera</p>
+          <p id="camera-state" class="mt-1 font-semibold text-cyan-100">starting</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+          <p class="text-slate-400">people</p>
+          <p id="tracking-state" class="mt-1 font-semibold text-cyan-100">waiting</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+          <p class="text-slate-400">x position</p>
+          <p id="position-state" class="mt-1 font-semibold text-cyan-100">50%</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+          <p class="text-slate-400">avatar gaze</p>
+          <p id="avatar-state" class="mt-1 font-semibold text-cyan-100">50%</p>
+        </div>
+      </div>
+
+      <p class="text-xs leading-5 text-slate-500">
+        Detection runs on-device in this browser. Camera frames are not uploaded by this page.
+      </p>
+    </aside>
+
+    <section class="relative min-h-[75vh] overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_50%_18%,rgba(56,189,248,0.22),transparent_35%),linear-gradient(135deg,rgba(15,23,42,0.96),rgba(2,6,23,0.98))] shadow-2xl shadow-black/40 lg:min-h-0">
+      <canvas id="vrm-canvas" class="absolute inset-0 h-full w-full"></canvas>
+      <div class="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-6">
+        <div>
+          <p class="text-sm uppercase tracking-[0.35em] text-cyan-200/70">vrm avatar stage</p>
+          <p class="mt-2 text-2xl font-semibold text-white">Mia Developer</p>
+        </div>
+        <div id="vrm-state" class="rounded-full border border-white/10 bg-slate-950/70 px-4 py-2 text-sm text-cyan-100 backdrop-blur">
+          loading avatar...
+        </div>
+      </div>
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
+      <div class="pointer-events-none absolute inset-x-8 bottom-7 rounded-3xl border border-white/10 bg-slate-950/55 px-5 py-4 text-sm leading-6 text-slate-300 backdrop-blur">
+        Large avatar canvas only. Vision state stays in the left column for now.
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import * as THREE from "https://esm.sh/three@0.182.0";
+    import { GLTFLoader } from "https://esm.sh/three@0.182.0/examples/jsm/loaders/GLTFLoader.js";
+    import { VRMLoaderPlugin, VRMUtils } from "https://esm.sh/@pixiv/three-vrm@3.4.4?deps=three@0.182.0";
+    import { FaceDetector, FilesetResolver, ObjectDetector } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35";
+
+    const VRM_MODEL_URL = "/models/mia-developer-v1.vrm";
+    const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_full_range/float16/latest/blaze_face_full_range.tflite";
+    const PERSON_MODEL_URL = "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite";
+    const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
+    const LEFT_EDGE = 0.36;
+    const RIGHT_EDGE = 0.64;
+    const NO_FACE_LIMIT = 12;
+    const DETECTION_CONFIDENCE = 0.45;
+    const CAMERA_WIDTH = 1280;
+    const CAMERA_HEIGHT = 720;
+    const GAZE_EASING = 0.08;
+    const FACE_DETECTION_INTERVAL_MS = 110;
+    const PERSON_DETECTION_INTERVAL_MS = 400;
+
+    const headline = document.getElementById("headline");
+    const video = document.getElementById("camera-feed");
+    const overlay = document.getElementById("face-overlay");
+    const context = overlay.getContext("2d");
+    const cameraMessage = document.getElementById("camera-message");
+    const cameraState = document.getElementById("camera-state");
+    const trackingState = document.getElementById("tracking-state");
+    const positionState = document.getElementById("position-state");
+    const avatarState = document.getElementById("avatar-state");
+    const vrmCanvas = document.getElementById("vrm-canvas");
+    const vrmState = document.getElementById("vrm-state");
+
+    let faceDetector;
+    let personDetector;
+    let lastVideoTime = -1;
+    let noTargetFrames = 0;
+    let lastFaceDetectionAt = -Infinity;
+    let lastPersonDetectionAt = -Infinity;
+    let cachedFaceDetections = [];
+    let cachedPersonDetections = [];
+    let targetGazePercent = 50;
+    let currentGazePercent = 50;
+    let vrm;
+    let vrmRenderer;
+    let vrmScene;
+    let vrmCamera;
+    let vrmClock;
+    let vrmLookAtTarget;
+    let blinkTimer = 0;
+    let nextBlinkTime = 2.5;
+    let isBlinking = false;
+    let vrmPoseTime = 0;
+
+    // Public hook for future avatar code.
+    window.wubbleVision = {
+      cameraReady: false,
+      targetVisible: false,
+      targetSource: "none",
+      targetPosition: "center",
+      targetCenterRatio: null,
+      targetPositionPercent: 50,
+      smoothedPositionPercent: 50,
+      peopleCount: 0,
+      confidence: 0,
+    };
+
+    headline.classList.add("opacity-0", "transition-opacity", "duration-1000");
+    requestAnimationFrame(() => headline.classList.remove("opacity-0"));
+
+    function setMessage(message) {
+      cameraMessage.textContent = message;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function percentFromRatio(centerRatio) {
+      if (centerRatio === null) return 50;
+      return Math.round(clamp(centerRatio, 0, 1) * 100);
+    }
+
+    function setPosition(position, confidence = 0, centerRatio = null) {
+      const positionPercent = percentFromRatio(centerRatio);
+
+      window.wubbleVision.targetPosition = position;
+      window.wubbleVision.targetCenterRatio = centerRatio;
+      window.wubbleVision.targetPositionPercent = positionPercent;
+      window.wubbleVision.confidence = confidence;
+
+      targetGazePercent = position === "none" ? 50 : positionPercent;
+      positionState.textContent = position === "none" ? "50%" : `${positionPercent}%`;
+    }
+
+    function animateAvatarGaze() {
+      currentGazePercent += (targetGazePercent - currentGazePercent) * GAZE_EASING;
+
+      // The avatar faces the viewer, so its visual gaze is mirrored from camera x-position.
+      const gazeRatio = (50 - currentGazePercent) / 50;
+      const roundedPercent = Math.round(currentGazePercent);
+
+      if (vrmLookAtTarget) {
+        vrmLookAtTarget.position.x = gazeRatio * 0.45;
+      }
+      avatarState.textContent = `${roundedPercent}%`;
+      window.wubbleVision.smoothedPositionPercent = roundedPercent;
+
+      requestAnimationFrame(animateAvatarGaze);
+    }
+
+    function classifyBox(boundingBox) {
+      const centerX = boundingBox.originX + boundingBox.width / 2;
+      const ratio = centerX / video.videoWidth;
+
+      if (ratio < LEFT_EDGE) return { position: "left", ratio };
+      if (ratio > RIGHT_EDGE) return { position: "right", ratio };
+      return { position: "center", ratio };
+    }
+
+    function sizeOverlay() {
+      if (!video.videoWidth || !video.videoHeight) return false;
+      if (overlay.width !== video.videoWidth || overlay.height !== video.videoHeight) {
+        overlay.width = video.videoWidth;
+        overlay.height = video.videoHeight;
+      }
+      return true;
+    }
+
+    function detectionScore(detection) {
+      return detection.categories?.[0]?.score ?? 0;
+    }
+
+    function detectionArea(detection) {
+      return (detection.boundingBox?.width ?? 0) * (detection.boundingBox?.height ?? 0);
+    }
+
+    function sortDetectionsByArea(detections) {
+      return detections
+        .filter((detection) => detection.boundingBox)
+        .sort((a, b) => detectionArea(b) - detectionArea(a));
+    }
+
+    function drawBox(detection, source, isPrimary, index) {
+      if (!detection?.boundingBox) return;
+
+      const box = detection.boundingBox;
+      const confidence = detectionScore(detection);
+      const { position, ratio } = classifyBox(box);
+      const positionPercent = percentFromRatio(ratio);
+      const lineWidth = Math.max(isPrimary ? 4 : 2, Math.round(overlay.width / (isPrimary ? 220 : 320)));
+      const isFace = source === "face";
+      const stroke = isFace
+        ? isPrimary ? "rgba(125, 211, 252, 0.98)" : "rgba(125, 211, 252, 0.45)"
+        : isPrimary ? "rgba(251, 191, 36, 0.98)" : "rgba(251, 191, 36, 0.5)";
+      const shadow = isFace ? "rgba(56, 189, 248, 0.8)" : "rgba(251, 191, 36, 0.75)";
+
+      context.lineWidth = lineWidth;
+      context.strokeStyle = stroke;
+      context.shadowColor = shadow;
+      context.shadowBlur = isPrimary ? 12 : 4;
+      context.setLineDash(isPrimary ? [] : [lineWidth * 3, lineWidth * 2]);
+      context.strokeRect(box.originX, box.originY, box.width, box.height);
+      context.setLineDash([]);
+      context.shadowBlur = 0;
+
+      const label = isPrimary
+        ? `${positionPercent}% ${source} ${Math.round(confidence * 100)}%`
+        : `${source} ${index + 1}`;
+      const labelWidth = isPrimary ? 220 : 90;
+      context.fillStyle = isPrimary ? "rgba(15, 23, 42, 0.85)" : "rgba(15, 23, 42, 0.62)";
+      context.fillRect(box.originX, Math.max(0, box.originY - 34), labelWidth, 28);
+      context.fillStyle = "white";
+      context.font = "20px system-ui, sans-serif";
+      context.fillText(label, box.originX + 10, Math.max(22, box.originY - 12));
+    }
+
+    function drawDetections(personDetections, faceDetections, primaryDetection, primarySource) {
+      if (!sizeOverlay()) return;
+
+      context.clearRect(0, 0, overlay.width, overlay.height);
+      personDetections.forEach((detection, index) => {
+        drawBox(detection, "person", primarySource === "person" && detection === primaryDetection, index);
+      });
+      faceDetections.forEach((detection, index) => {
+        drawBox(detection, "face", primarySource === "face" && detection === primaryDetection, index);
+      });
+    }
+
+    function clearDetection() {
+      if (sizeOverlay()) {
+        context.clearRect(0, 0, overlay.width, overlay.height);
+      }
+      window.wubbleVision.targetVisible = false;
+      window.wubbleVision.targetSource = "none";
+      window.wubbleVision.peopleCount = 0;
+      trackingState.textContent = "none";
+      setPosition("none");
+    }
+
+    async function loadDetectors() {
+      cameraState.textContent = "loading models";
+      setMessage("Loading local face and person detectors...");
+
+      const vision = await FilesetResolver.forVisionTasks(WASM_URL);
+      faceDetector = await FaceDetector.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: MODEL_URL,
+          delegate: "CPU",
+        },
+        runningMode: "VIDEO",
+        minDetectionConfidence: DETECTION_CONFIDENCE,
+      });
+      personDetector = await ObjectDetector.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: PERSON_MODEL_URL,
+          delegate: "CPU",
+        },
+        runningMode: "VIDEO",
+        scoreThreshold: 0.35,
+        categoryAllowlist: ["person"],
+      });
+    }
+
+    async function startCamera() {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("This browser does not expose camera access. Use HTTPS and a modern Chromium build.");
+      }
+
+      cameraState.textContent = "requesting";
+      setMessage("Requesting camera permission...");
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          width: { ideal: CAMERA_WIDTH },
+          height: { ideal: CAMERA_HEIGHT },
+          frameRate: { ideal: 15, max: 20 },
+        },
+      });
+
+      video.srcObject = stream;
+      await video.play();
+
+      window.wubbleVision.cameraReady = true;
+      cameraState.textContent = "ready";
+      setMessage("Camera is live. Step into view to test 0-100% gaze tracking.");
+    }
+
+    function setVrmState(message) {
+      vrmState.textContent = message;
+    }
+
+    function resizeVrmRenderer() {
+      if (!vrmRenderer || !vrmCamera) return;
+
+      const rect = vrmCanvas.parentElement.getBoundingClientRect();
+      const width = Math.max(1, Math.floor(rect.width));
+      const height = Math.max(1, Math.floor(rect.height));
+
+      vrmRenderer.setSize(width, height, false);
+      vrmCamera.aspect = width / height;
+      vrmCamera.updateProjectionMatrix();
+    }
+
+    function frameVrmCamera() {
+      if (!vrm?.humanoid || !vrmCamera || !vrmLookAtTarget) return;
+
+      vrm.scene.updateMatrixWorld(true);
+      const headNode = vrm.humanoid.getNormalizedBoneNode("head");
+      const hipsNode = vrm.humanoid.getNormalizedBoneNode("hips");
+
+      if (headNode && hipsNode) {
+        const headPos = headNode.getWorldPosition(new THREE.Vector3());
+        const hipsPos = hipsNode.getWorldPosition(new THREE.Vector3());
+        const midY = (headPos.y + hipsPos.y) / 2;
+
+        vrmCamera.position.set(0, midY + 0.18, 2.75);
+        vrmCamera.lookAt(0, midY + 0.08, 0);
+        vrmLookAtTarget.position.set(0, headPos.y, 1.5);
+      } else {
+        vrmCamera.position.set(0, 1.35, 2.8);
+        vrmCamera.lookAt(0, 1.25, 0);
+        vrmLookAtTarget.position.set(0, 1.45, 1.5);
+      }
+    }
+
+    function updateVrmBlink(delta) {
+      if (!vrm?.expressionManager) return;
+
+      blinkTimer += delta;
+      if (isBlinking) {
+        const progress = blinkTimer / 0.14;
+        const blinkValue = progress < 0.5 ? progress * 2 : Math.max(0, (1 - progress) * 2);
+
+        vrm.expressionManager.setValue("blink", blinkValue);
+        if (progress >= 1) {
+          vrm.expressionManager.setValue("blink", 0);
+          isBlinking = false;
+          blinkTimer = 0;
+          nextBlinkTime = 2 + Math.random() * 4;
+        }
+      } else if (blinkTimer >= nextBlinkTime) {
+        isBlinking = true;
+        blinkTimer = 0;
+      }
+    }
+
+    function updateVrmPose(delta) {
+      if (!vrm?.humanoid) return;
+
+      vrmPoseTime += delta;
+      const t = vrmPoseTime;
+      const gazeRatio = (50 - currentGazePercent) / 50;
+      const humanoid = vrm.humanoid;
+
+      const spine = humanoid.getNormalizedBoneNode("spine");
+      if (spine) {
+        spine.rotation.x = -0.05 - 0.025 * Math.sin(t * 0.8);
+      }
+
+      const neck = humanoid.getNormalizedBoneNode("neck");
+      if (neck) {
+        neck.rotation.x = -0.02 + 0.01 * Math.sin(t * 0.7);
+        neck.rotation.y = gazeRatio * 0.16;
+      }
+
+      const head = humanoid.getNormalizedBoneNode("head");
+      if (head) {
+        head.rotation.y = gazeRatio * 0.24;
+      }
+
+      const leftUpperArm = humanoid.getNormalizedBoneNode("leftUpperArm");
+      const rightUpperArm = humanoid.getNormalizedBoneNode("rightUpperArm");
+      if (leftUpperArm) {
+        leftUpperArm.rotation.z = -1.2 + 0.02 * Math.sin(t * 0.5);
+      }
+      if (rightUpperArm) {
+        rightUpperArm.rotation.z = 1.2 - 0.02 * Math.sin(t * 0.5);
+      }
+
+      const leftLowerArm = humanoid.getNormalizedBoneNode("leftLowerArm");
+      const rightLowerArm = humanoid.getNormalizedBoneNode("rightLowerArm");
+      if (leftLowerArm) {
+        leftLowerArm.rotation.y = -0.3;
+      }
+      if (rightLowerArm) {
+        rightLowerArm.rotation.y = 0.3;
+      }
+    }
+
+    async function initVrm() {
+      setVrmState("loading avatar...");
+
+      vrmScene = new THREE.Scene();
+      vrmCamera = new THREE.PerspectiveCamera(24, 1, 0.1, 20);
+      vrmLookAtTarget = new THREE.Object3D();
+      vrmScene.add(vrmLookAtTarget);
+
+      vrmRenderer = new THREE.WebGLRenderer({
+        canvas: vrmCanvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      });
+      vrmRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+      vrmRenderer.setClearColor(0x000000, 0);
+      if (THREE.SRGBColorSpace) {
+        vrmRenderer.outputColorSpace = THREE.SRGBColorSpace;
+      }
+
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+      keyLight.position.set(1.2, 1.6, 1.4).normalize();
+      vrmScene.add(keyLight);
+      vrmScene.add(new THREE.AmbientLight(0xffffff, 1.7));
+
+      resizeVrmRenderer();
+      new ResizeObserver(resizeVrmRenderer).observe(vrmCanvas.parentElement);
+      window.addEventListener("resize", resizeVrmRenderer);
+
+      const loader = new GLTFLoader();
+      loader.register((parser) => new VRMLoaderPlugin(parser));
+
+      try {
+        const gltf = await loader.loadAsync(VRM_MODEL_URL, (event) => {
+          if (event.total > 0) {
+            setVrmState(`loading ${Math.round((event.loaded / event.total) * 100)}%`);
+          }
+        });
+
+        vrm = gltf.userData.vrm;
+        if (!vrm) throw new Error("VRM payload missing from model file");
+
+        VRMUtils.removeUnnecessaryVertices(gltf.scene);
+        VRMUtils.removeUnnecessaryJoints(gltf.scene);
+        vrm.scene.traverse((object) => {
+          object.frustumCulled = false;
+        });
+
+        if (vrm.meta?.metaVersion === "0") {
+          vrm.scene.rotation.y = Math.PI;
+        }
+        if (vrm.lookAt) {
+          vrm.lookAt.target = vrmLookAtTarget;
+        }
+
+        vrmScene.add(vrm.scene);
+        frameVrmCamera();
+        setVrmState("avatar ready");
+      } catch (error) {
+        setVrmState("avatar failed");
+        console.error("VRM load failed", error);
+      }
+
+      vrmClock = new THREE.Clock();
+      requestAnimationFrame(animateVrm);
+    }
+
+    function animateVrm() {
+      requestAnimationFrame(animateVrm);
+
+      const delta = vrmClock?.getDelta() ?? 0;
+      updateVrmPose(delta);
+      updateVrmBlink(delta);
+      vrm?.update(delta);
+
+      if (vrmRenderer && vrmScene && vrmCamera) {
+        vrmRenderer.render(vrmScene, vrmCamera);
+      }
+    }
+
+    function detectFrame(now) {
+      if (faceDetector && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.currentTime !== lastVideoTime) {
+        lastVideoTime = video.currentTime;
+
+        if (now - lastFaceDetectionAt > FACE_DETECTION_INTERVAL_MS) {
+          const faceResult = faceDetector.detectForVideo(video, now);
+          cachedFaceDetections = sortDetectionsByArea(faceResult.detections ?? []);
+          lastFaceDetectionAt = now;
+        }
+
+        if (personDetector && now - lastPersonDetectionAt > PERSON_DETECTION_INTERVAL_MS) {
+          const personResult = personDetector.detectForVideo(video, now);
+          cachedPersonDetections = sortDetectionsByArea(personResult.detections ?? []);
+          lastPersonDetectionAt = now;
+        }
+
+        const faceDetections = cachedFaceDetections;
+        const personDetections = cachedPersonDetections;
+        const peopleCount = personDetections.length > 0 ? personDetections.length : faceDetections.length;
+        const primarySource = faceDetections.length > 0 ? "face" : "person";
+        const primaryDetection = faceDetections[0] ?? personDetections[0] ?? null;
+
+        if (primaryDetection?.boundingBox) {
+          noTargetFrames = 0;
+          const confidence = detectionScore(primaryDetection);
+          const { position, ratio } = classifyBox(primaryDetection.boundingBox);
+
+          window.wubbleVision.targetVisible = true;
+          window.wubbleVision.targetSource = primarySource;
+          window.wubbleVision.peopleCount = peopleCount;
+          trackingState.textContent = `${peopleCount} ${peopleCount === 1 ? "person" : "people"} · ${primarySource} ${Math.round(confidence * 100)}%`;
+          setPosition(position, confidence, ratio);
+          drawDetections(personDetections, faceDetections, primaryDetection, primarySource);
+        } else {
+          noTargetFrames += 1;
+          if (noTargetFrames > NO_FACE_LIMIT) clearDetection();
+        }
+      }
+
+      requestAnimationFrame(detectFrame);
+    }
+
+    async function boot() {
+      try {
+        await loadDetectors();
+        await startCamera();
+        requestAnimationFrame(detectFrame);
+      } catch (error) {
+        cameraState.textContent = "blocked";
+        trackingState.textContent = "offline";
+        setMessage(error.message || "Camera setup failed.");
+        console.error(error);
+      }
+    }
+
+    initVrm();
+    requestAnimationFrame(animateAvatarGaze);
+
+    boot();
+  </script>
+</body>
+</html>
