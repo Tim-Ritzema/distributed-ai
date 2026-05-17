@@ -101,7 +101,7 @@ A stored fact derived from one or more events.
 - `owner_principal_id` — FamilyMember or `household`.
 - `privacy_tier` — inherited from the producing event(s); see [memory-and-context.md](../02-domains/memory-and-context.md) for tightening/loosening rules.
 - `provenance` — `{source_event_id, source_type, source_id, capability_used, confidence}`. Generalized so non-device origins (workflow, scheduler, agent, brain, system) are first-class.
-- `embedding_ref?` — pointer into the vector store ([ADR-0003](../05-decisions/0003-vector-store.md)).
+- `embedding_ref?` — row reference to the pgvector-backed embedding table ([ADR-0003](../05-decisions/0003-vector-store.md)).
 - `category` — `per-user-private` | `family-shared` | `ambient-observation` | `agent-internal`.
 - `created_at`, `last_accessed_at`, `expires_at?`.
 
@@ -192,7 +192,4 @@ The owner is what drives storage and retention; the subject + tier drive present
 ## Known Decisions
 
 - 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — Postgres holds these entities.
-
-## Open Questions
-
-- 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — embedding storage location (pgvector vs Qdrant) determines `embedding_ref` shape.
+- 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — pgvector stores memory embeddings in Postgres.

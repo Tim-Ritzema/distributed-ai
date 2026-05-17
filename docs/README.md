@@ -29,9 +29,10 @@ A self-hosted, family-scoped personal AI assistant for the Ritzema family. Runs 
 | Decision | ADR |
 |---|---|
 | Postgres is the source of truth for durable app state | [ADR-0007](05-decisions/0007-persistent-state-postgres.md) |
+| pgvector in Postgres is the vector store for memory embeddings | [ADR-0003](05-decisions/0003-vector-store.md) |
 | Hybrid Elixir/Phoenix control plane + Python AI workers (LiveView excluded; SvelteKit UI) | [ADR-0001](05-decisions/0001-control-plane-language.md) |
 
-Beyond Postgres (ADR-0007) and control-plane language (ADR-0001), no other technology choices are committed. Event broker, vector store, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider are all tracked as ADRs in [05-decisions/](05-decisions/).
+Accepted technology choices are Postgres for durable app state, pgvector for memory embeddings, and the hybrid Elixir/Phoenix control plane + Python AI workers. Event broker, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider remain tracked as ADRs in [05-decisions/](05-decisions/).
 
 **Next concrete step:** the [Pre-Phase 0 Phoenix control-plane spike](04-roadmap/phases.md) — a tightly-scoped vertical slice (health endpoint, capability-gated Phoenix Channel, server-pushed event to a SvelteKit client, Python worker over HTTP) that validates ADR-0001 in code without forcing ADR-0002 to close.
 
@@ -74,7 +75,7 @@ Beyond Postgres (ADR-0007) and control-plane language (ADR-0001), no other techn
 - [0000-template.md](05-decisions/0000-template.md) — ADR template
 - [0001-control-plane-language.md](05-decisions/0001-control-plane-language.md) 🟢 hybrid Elixir+Python accepted
 - [0002-event-broker.md](05-decisions/0002-event-broker.md) 🟣 staged Phoenix + Postgres outbox → NATS later
-- [0003-vector-store.md](05-decisions/0003-vector-store.md) 🔵
+- [0003-vector-store.md](05-decisions/0003-vector-store.md) 🟢 pgvector accepted
 - [0004-realtime-transport.md](05-decisions/0004-realtime-transport.md) 🟣 Phoenix Channels leading
 - [0005-device-telemetry-protocol.md](05-decisions/0005-device-telemetry-protocol.md) 🟣 MQTT favored for Pis
 - [0006-workflow-engine.md](05-decisions/0006-workflow-engine.md) 🟣 Prefect leading

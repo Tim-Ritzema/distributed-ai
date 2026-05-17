@@ -63,7 +63,7 @@ A family member's right-to-forget covers their own owned memories. A kid cannot 
 
 ## Embeddings
 
-Memories may have embeddings in a vector store ([ADR-0003](../05-decisions/0003-vector-store.md) — pgvector vs Qdrant is open). Rules:
+Memories may have embeddings in pgvector via Postgres ([ADR-0003](../05-decisions/0003-vector-store.md)). Rules:
 
 - **Embeddings of `private-personal` memories never leave the network.** The embedding model runs locally. Cloud embedding APIs are forbidden for this tier.
 - **Embeddings of `family-shared` memories may use cloud embeddings only with cloud-egress capability.** Otherwise local.
@@ -97,10 +97,10 @@ The audit log is owned by `household` and retained indefinitely.
 ## Known Decisions
 
 - 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — memory records in Postgres.
+- 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — memory embeddings in pgvector.
 
 ## Open Questions
 
-- 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — pgvector vs Qdrant. Affects embedding storage layout but not the access model.
 - Sensitive-content detection. How does the system decide a memory should be auto-tightened to `private-personal`? Probably a classifier in the Brain on memory creation; tunable.
 - Forgetting cascade depth. When Tim deletes a memory, do summaries that referenced it get rewritten on next pass, or just flagged? Probably flagged; rewriting requires new model calls.
 - Long-term memory consolidation. After N years, do we summarize and archive raw memories? Out of scope for now.

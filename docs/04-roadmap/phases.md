@@ -105,5 +105,5 @@ See [open-questions.md](open-questions.md) for the full live list. Highlights fo
 
 - 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — control plane language. **Closed** before Phase 0 implementation: hybrid Elixir/Phoenix + Python AI workers.
 - 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — event broker. Needs to be accepted before full Phase 0, not before the Phoenix spike.
-- 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — vector store. Needs to close before memory embeddings ship (Phase 0 or 1).
+- 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — vector store. **Closed** before memory embeddings ship: pgvector in Postgres.
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — workflow engine. Needs to close before any workflows ship (Phase 1).

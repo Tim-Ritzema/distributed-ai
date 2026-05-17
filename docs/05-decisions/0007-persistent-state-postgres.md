@@ -35,13 +35,15 @@ For a self-hosted, family-scale system, the candidates were ordinary: Postgres, 
 
 **Postgres is the source of truth for durable app state.**
 
-This is the only accepted technology decision in the project as of writing. Every other broker/store/runner is either a cache, a derived index, an event log, or an orchestration concern — all of which can be reconstructed (slowly, but correctly) from Postgres + the durable event log feeding it.
+Initial runtime as of this update: PostgreSQL `18.4 (Homebrew)` via Homebrew `postgresql@18`, deployed on `mac-mini-1`.
+
+Every other broker/store/runner is either a cache, a derived index, an event log, or an orchestration concern — all of which can be reconstructed (slowly, but correctly) from Postgres + the durable event log feeding it.
 
 ## Consequences
 
 - Data model docs ([01-architecture/data-model.md](../01-architecture/data-model.md)) may assume relational primitives (foreign keys, transactions, JSONB).
 - Migrations live alongside the application code; deployment includes a migration step.
-- pgvector becomes the natural default for [ADR-0003](0003-vector-store.md), though Qdrant remains a real option.
+- pgvector is accepted for memory embeddings in [ADR-0003](0003-vector-store.md). Current extension version: `0.8.2`.
 - LISTEN/NOTIFY + outbox is a viable approach for the durable event history plane in [ADR-0002](0002-event-broker.md).
 - Postgres becomes the most operationally important service; backups and recovery procedures must be solid before Phase 1.
 - All other data stores are subordinate. If something contradicts Postgres, Postgres wins.

@@ -5,7 +5,6 @@ Living list of decisions that need to be made. Each question lives here first; o
 ## Active ADRs
 
 - 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — **Event broker(s).** Staged path leading: Phoenix realtime + Postgres outbox for the spike (Option F), graduate to NATS/JetStream behind the Brain (Option D) when concrete triggers — replay, durable consumers, cross-machine worker distribution — are real. Phoenix.PubSub / Phoenix.Channels for connected-client fanout *inside* the Brain; NATS/JetStream as a broker *behind* the Brain.
-- 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — **Vector store.** pgvector vs Qdrant.
 - 🟣 [ADR-0004](../05-decisions/0004-realtime-transport.md) — **Realtime transport.** Phoenix Channels leading (informed by accepted ADR-0001); plain WebSockets remains the fallback.
 - 🟣 [ADR-0005](../05-decisions/0005-device-telemetry-protocol.md) — **Device telemetry protocol.** MQTT favored for Pis.
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — **Workflow engine.** Prefect leading for Python AI workflows; Oban now relevant for simple Elixir-side jobs.
@@ -14,13 +13,13 @@ Living list of decisions that need to be made. Each question lives here first; o
 ## Accepted
 
 - 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — Hybrid Elixir/Phoenix control plane + Python AI workers (LiveView excluded; SvelteKit UI).
+- 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — pgvector in Postgres for memory embeddings.
 - 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — Postgres for durable app state.
 
 ## Pre-ADR questions (not yet ripe)
 
 These are on the radar but don't yet have enough context to write a proper ADR.
 
-- **Postgres on the Mac Studio or on the accompanying Mac mini from day one?** Operational decision; depends on Studio resource headroom. Probably start on the Studio, migrate when contention shows.
 - **VPN choice** for off-LAN client access. Tailscale / raw WireGuard / other. Operational; deferred until [03-operations/deployment.md](../03-operations/deployment.md) gets fleshed out.
 - **Embedding model.** What runs locally for memory embeddings? Probably one of the small Sentence-Transformers; specific choice pending tests.
 - **Topic naming convention.** Provisional: dot-separated lowercase tokens, no underscores. Typically `<domain>.<entity>.<verb>` (e.g., `perception.face.seen`), but `<domain>.<verb>` (`presence.changed`, `job.progress`) and `<domain>.<state>` (`job.succeeded`) are also valid where the entity is implicit. Ratify after first implementation pass. See [01-architecture/event-system.md](../01-architecture/event-system.md).

@@ -1,14 +1,21 @@
 # ADR-0003: Vector store
 
-**Status:** 🔵 open
+**Status:** 🟢 accepted
 
 ## Context
 
-Memories may be embedded for similarity search ([02-domains/memory-and-context.md](../02-domains/memory-and-context.md)). The system needs a vector store. Two options are realistic at our scale.
+Memories may be embedded for similarity search ([02-domains/memory-and-context.md](../02-domains/memory-and-context.md)). The system needs a vector store.
+
+[ADR-0007](0007-persistent-state-postgres.md) already accepts Postgres as the durable source of truth. The initial database deployment now runs on `mac-mini-1`, which makes a Postgres extension the lowest-operational-cost path for Phase 0.
+
+Initial runtime as of this decision:
+
+- PostgreSQL `18.4 (Homebrew)` via Homebrew `postgresql@18`.
+- pgvector `0.8.2`.
 
 ## Options
 
-### Option A — pgvector (in Postgres)
+### Option A — pgvector (in Postgres, accepted)
 
 - **Pros:**
   - One fewer service to operate.
@@ -34,26 +41,18 @@ Memories may be embedded for similarity search ([02-domains/memory-and-context.m
 
 ## Decision
 
-**Open.** Decision criteria for closing:
+**Use pgvector in Postgres for memory embeddings.**
 
-- How big do we expect the vector index to get in the next two years? Estimate: low hundreds of thousands of vectors. Both options handle this comfortably.
-- How important is single-transaction memory + embedding writes? (Probably important for consistency and the deletion-cascade story.)
-- How operationally minimal do we want Phase 0 to be? (Very minimal favors pgvector.)
-
-Provisional lean: pgvector for Phase 0, with the option to migrate to Qdrant if performance or features become limiting. The migration is real work but tractable: re-embed and re-index.
+This keeps memory rows and their embeddings in the same transactional store. Qdrant remains a valid future escape hatch if scale, indexing features, or performance requirements outgrow pgvector, but it is not a Phase 0 dependency.
 
 ## Consequences
 
-If pgvector:
-
-- One service. Memory + embedding writes are transactional. Filtering by tier/owner is a regular SQL `WHERE`.
-- `embedding_ref` in the data model is just a row reference.
-
-If Qdrant:
-
-- Two services. Need an outbox / dual-write story for memory + embedding consistency.
-- Cross-store auth needs explicit design.
-- Richer filtering features available.
+- One service for relational state and vector search. Memory + embedding writes are transactional.
+- Filtering by owner, privacy tier, category, and capability-derived predicates stays in SQL.
+- `embedding_ref` in the data model is a Postgres row reference, not an external collection id.
+- Backups and restore procedures for Postgres cover embeddings too.
+- Index tuning now belongs to the Postgres operations story.
+- If pgvector becomes limiting, a later ADR can supersede this one and define the Qdrant migration. The migration shape is tractable: re-embed or export existing embeddings, rebuild indexes, and switch `embedding_ref` semantics.
 
 ## References
 

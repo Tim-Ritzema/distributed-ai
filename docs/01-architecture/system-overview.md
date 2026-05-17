@@ -18,16 +18,16 @@ Name the major components, their responsibilities, and the runtime loops that ho
 │   Control plane · agent runtime · event router · auth        │
 │   Runs three loops: event · idle · maintenance               │
 │                                                              │
-│   Talks to: AI Router, Workflow Runner, Postgres,            │
-│             Vector Store, Event Broker                       │
+│   Talks to: AI Router, Workflow Runner, Postgres/pgvector,   │
+│             Event Broker                                     │
 └──────┬──────────┬───────────┬───────────┬──────────┬─────────┘
        │          │           │           │          │
        ▼          ▼           ▼           ▼          ▼
 ┌──────────┐ ┌────────┐ ┌──────────┐ ┌─────────┐ ┌─────────┐
 │ AI Router│ │Workflow│ │ Postgres │ │ Vector  │ │ Event   │
 │ (cheap/  │ │ Runner │ │  🟢      │ │ Store   │ │ Broker  │
-│ premium/ │ │ (Python│ │ source-of│ │  TBD    │ │  TBD    │
-│  local)  │ │ jobs)  │ │  truth)  │ │ ADR-0003│ │ ADR-0002│
+│ premium/ │ │ (Python│ │ source-of│ │pgvector │ │  TBD    │
+│  local)  │ │ jobs)  │ │  truth)  │ │ADR-0003 │ │ ADR-0002│
 │ TBD      │ │ TBD    │ │ ADR-0007 │ │         │ │         │
 │          │ │ADR-0006│ │          │ │         │ │         │
 └────┬─────┘ └───┬────┘ └──────────┘ └─────────┘ └────┬────┘
@@ -55,7 +55,7 @@ Name the major components, their responsibilities, and the runtime loops that ho
 - **Edge Devices** — Pis with cameras, static installs, mobile phones, laptops. Each one is a registered client under [client-registration.md](../02-domains/client-registration.md).
 - **Web/Mobile Clients** — SvelteKit on the web; native mobile (TBD) on phones. Talk to the Brain over HTTP for CRUD and WebSockets for live updates. See [api-and-transport.md](api-and-transport.md).
 - **Postgres** 🟢 — Source of truth for durable app state (family principals, devices, capabilities, work items, memories, audit logs). See [ADR-0007](../05-decisions/0007-persistent-state-postgres.md).
-- **Vector Store** — For memory embeddings. Choice between pgvector (in Postgres) and Qdrant (separate service) is open ([ADR-0003](../05-decisions/0003-vector-store.md)).
+- **Vector Store** 🟢 — pgvector in Postgres for memory embeddings. It is a logical store, not a separate service ([ADR-0003](../05-decisions/0003-vector-store.md)).
 - **Event Broker** — Realtime routing and durable history. Possibly two brokers (one per plane). Open ([ADR-0002](../05-decisions/0002-event-broker.md)).
 - **AI Router** — Tiered model routing pattern (cheap / premium / local) driven by a classifier. See [ai-orchestration.md](ai-orchestration.md).
 - **Workflow Runner** — Multi-step Python jobs with retries, scheduling, progress events. Prefect leads ([ADR-0006](../05-decisions/0006-workflow-engine.md)).
@@ -73,10 +73,10 @@ These are documented here at the conceptual level. Mechanics live in the Elixir/
 ## Known Decisions
 
 - 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — Hybrid Elixir/Phoenix control plane + Python AI workers.
+- 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — pgvector in Postgres for memory embeddings.
 - 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — Postgres for durable app state.
 
 ## Open Questions
 
 - 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — Event broker(s), staged path proposed.
-- 🔵 [ADR-0003](../05-decisions/0003-vector-store.md) — Vector store.
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — Workflow engine (Prefect leading).

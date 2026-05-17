@@ -1,6 +1,6 @@
 # Concept Attribution
 
-What was carried over from each reference repo, what was adapted, what was deferred, and what was rejected. The rule of thumb: **concepts kept, technologies open.** When a row says "kept," that's the *idea* — the technology choice routes through ADRs in [05-decisions/](../05-decisions/).
+What was carried over from each reference repo, what was adapted, what was deferred, and what was rejected. The rule of thumb: **concepts kept, technologies route through ADRs.** When a row says "kept," that's the *idea* — the technology choice routes through ADRs in [05-decisions/](../05-decisions/).
 
 ## From local-vida
 
@@ -15,7 +15,7 @@ What was carried over from each reference repo, what was adapted, what was defer
 | Observability stack ideas (Prometheus, Grafana, Loki, Langfuse for LLM tracing) | kept as **inspiration** | [03-operations/observability.md](../03-operations/observability.md) (stub, stack TBD). |
 | Prefect for Python workflow orchestration | kept as **lead candidate** | [02-domains/background-processing.md](../02-domains/background-processing.md), [ADR-0006](../05-decisions/0006-workflow-engine.md) — proposed, not accepted. |
 | **Single-user architecture** | **rejected** | Phase 0 in distributed-ai is family-aware. Identity, ownership fields, privacy tiers, and capability checks exist from day one. See [04-roadmap/phases.md](../04-roadmap/phases.md). |
-| Specific tech stack (Python, FastAPI, Valkey, Qdrant) | not committed | All open via ADRs. |
+| Specific tech stack (Python, FastAPI, Valkey, Qdrant) | not adopted wholesale | Individual choices route through ADRs; Qdrant is not the Phase 0 vector store ([ADR-0003](../05-decisions/0003-vector-store.md)). |
 
 ## From mia-sempre
 
@@ -29,7 +29,7 @@ What was carried over from each reference repo, what was adapted, what was defer
 | "Goals/constraints, not microcommands" principle | kept | [00-orientation/principles.md](../00-orientation/principles.md) invariant #7. Applied even at L4-only. |
 | "One mind, many bodies" framing | kept | [00-orientation/glossary.md](../00-orientation/glossary.md), brain-to-nerve doc. |
 | Aspect / Momma Mia synthesis (parallel reasoners + synthesizer) | **deferred** | Mentioned in [01-architecture/ai-orchestration.md](../01-architecture/ai-orchestration.md) as a Phase 4 candidate. Not day-one. |
-| Specific tech stack (Python, FastAPI, Valkey, Qdrant, LiteLLM) | not committed | All open via ADRs. |
+| Specific tech stack (Python, FastAPI, Valkey, Qdrant, LiteLLM) | not adopted wholesale | Individual choices route through ADRs; Qdrant is not the Phase 0 vector store ([ADR-0003](../05-decisions/0003-vector-store.md)). |
 
 ## Explicit rejections
 
