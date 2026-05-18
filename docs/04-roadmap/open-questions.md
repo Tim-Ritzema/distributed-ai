@@ -4,7 +4,7 @@ Living list of decisions that need to be made. Each question lives here first; o
 
 ## Active ADRs
 
-- 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — **Event broker(s).** Staged path leading: Phoenix realtime + Postgres outbox for the spike (Option F), graduate to NATS/JetStream behind the Brain (Option D) when concrete triggers — replay, durable consumers, cross-machine worker distribution — are real. Phoenix.PubSub / Phoenix.Channels for connected-client fanout *inside* the Brain; NATS/JetStream as a broker *behind* the Brain.
+- 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — **Event broker(s).** Staged path leading: Phoenix realtime + Postgres outbox for the spike (Option F), graduate to NATS/JetStream behind the Brain (Option D) when concrete triggers — replay, durable consumers, broker-backed distributed worker queues (beyond [ADR-0009](../05-decisions/0009-worker-fleet-topology.md) sync HTTP dispatch) — are real. Phoenix.PubSub / Phoenix.Channels for connected-client fanout *inside* the Brain; NATS/JetStream as a broker *behind* the Brain.
 - 🟣 [ADR-0004](../05-decisions/0004-realtime-transport.md) — **Realtime transport.** Phoenix Channels leading (informed by accepted ADR-0001); plain WebSockets remains the fallback.
 - 🟣 [ADR-0005](../05-decisions/0005-device-telemetry-protocol.md) — **Device telemetry protocol.** MQTT favored for Pis.
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — **Workflow engine.** Prefect leading for Python AI workflows; Oban now relevant for simple Elixir-side jobs.
@@ -15,6 +15,7 @@ Living list of decisions that need to be made. Each question lives here first; o
 - 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — Hybrid Elixir/Phoenix control plane + Python AI workers (LiveView excluded; SvelteKit UI).
 - 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — pgvector in Postgres for memory embeddings.
 - 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — Postgres for durable app state.
+- 🟢 [ADR-0009](../05-decisions/0009-worker-fleet-topology.md) — Worker fleet topology (DB on `mac-mini-1`, Brain on `mac-mini-2`, FastAPI worker service + AI model runtimes on Mac Studio; workflow-worker placement deferred to [ADR-0006](../05-decisions/0006-workflow-engine.md)).
 
 ## Pre-ADR questions (not yet ripe)
 

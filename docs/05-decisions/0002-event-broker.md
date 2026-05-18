@@ -87,7 +87,7 @@ Decision criteria still in play for full acceptance:
 - How much do we care about transactional guarantees between durable state and event history? (Probably a lot. Argues for outbox pattern.)
 - ADR-0001 has accepted Elixir/Phoenix for the control plane. Phoenix.PubSub / Phoenix.Channels is now a stronger candidate for realtime fanout, but **ADR-0002 remains proposed, not accepted** for the realtime/durable broker boundary and the durable history choice. Don't accidentally accept this ADR by leaning on Phoenix.PubSub for all of it.
 
-Provisional lean: Option F for the first Phoenix validation pass, then Option D if/when the system needs a real broker behind the Brain. The trigger for NATS/JetStream is not "Phoenix exists"; it is a concrete need for broker-level replay, durable consumers, queue groups, cross-machine worker distribution, or richer redelivery semantics.
+Provisional lean: Option F for the first Phoenix validation pass, then Option D if/when the system needs a real broker behind the Brain. The trigger for NATS/JetStream is not "Phoenix exists"; it is a concrete need for broker-level replay, durable consumers, queue groups, broker-backed distributed worker queues (beyond [ADR-0009](0009-worker-fleet-topology.md) sync HTTP dispatch), or richer redelivery semantics.
 
 If NATS/JetStream is adopted, it remains behind the Brain. SvelteKit clients still use Phoenix Channels / WebSockets, and capability checks for client-visible subscriptions still happen in the Brain.
 

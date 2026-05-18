@@ -15,7 +15,7 @@ Terms appear here once and are used consistently across all docs. When a doc int
 - **Client** — any process that connects to the system on behalf of a principal. Includes mobile apps, web portals, static installs, Pis, laptops.
 - **Device** — physical hardware. A device may host one or more clients.
 - **Static installation** — a wall-mounted device with a screen and camera, addressing whoever's in the room. Operates under a special role with limited capabilities even when it identifies a known person.
-- **Brain** — the control plane / agent runtime. Initially runs on a Mac Studio in the garage.
+- **Brain** — the control plane / agent runtime. Initially runs on `mac-mini-2` on the home LAN. The FastAPI worker service + AI model runtimes live separately on the Mac Studio per [ADR-0009](../05-decisions/0009-worker-fleet-topology.md); workflow-worker placement is deferred to [ADR-0006](../05-decisions/0006-workflow-engine.md).
 - **Body** — an embodiment of intent (a Pi avatar, mobile app, future robot). One mind, many bodies.
 
 ## Events

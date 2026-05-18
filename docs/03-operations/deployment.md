@@ -27,8 +27,24 @@ The Pi kiosk setup remains in `local-computer-control` because it configures a p
 
 `distributed-ai` owns schema design, migrations, application-level database access, and backup/restore expectations for this app.
 
+## Current Brain Host
+
+`mac-mini-2` is the day-one host for the Phoenix Brain (control plane + agent runtime) per [ADR-0009](../05-decisions/0009-worker-fleet-topology.md). Hardware specifics and provisioning live in `local-computer-control`'s `inventory.yaml`; service installation, BEAM runtime, and launchd setup are owned there.
+
+`distributed-ai` owns the Phoenix application source, configuration shape, schema migrations against `mac-mini-1`, and Channel / event-router code.
+
+## Current Worker Host
+
+The Mac Studio (garage) is the day-one host for the Python AI worker tier per [ADR-0009](../05-decisions/0009-worker-fleet-topology.md). It runs the FastAPI worker service, Ollama, and local model runtimes (transcription, embeddings, vision, OCR, LLM inference). Python workflow workers are the likely next addition here once [ADR-0006](../05-decisions/0006-workflow-engine.md) closes, but their placement is ADR-0006's decision — not ADR-0009's.
+
+`local-computer-control` owns machine preparation, Python environment, model installation, and service supervision. `distributed-ai` owns the FastAPI application source, endpoint contracts, and the routing table the Brain uses to dispatch tasks.
+
+Worker service auth follows the **defense-in-depth** rule defined in [ADR-0009](../05-decisions/0009-worker-fleet-topology.md): the Studio FastAPI binds to the LAN interface (not WAN), the host firewall allowlists `mac-mini-2`'s LAN IP as the only inbound source, and every request requires `Authorization: Bearer <token>` (the actual auth gate — interface bind and firewall are belt-and-suspenders, not access control). The bearer token is provisioned out-of-band via env vars (owned by `local-computer-control`); `distributed-ai` owns token verification.
+
+TLS is not required in Phase 0. The token travels in cleartext over the LAN, which assumes the LAN is trusted at the confidentiality layer. mTLS, per-task tokens, and TLS itself are deferred until (a) a remote worker host is added, (b) worker traffic crosses an untrusted network, or (c) the LAN's confidentiality assumption stops holding (guest segments, etc.). See ADR-0009 for the canonical rationale and deferred-item triggers.
+
 ## Secrets
 
 AWS credentials for the prototype deploy live in `distributed-ai/.env`, which is gitignored. `distributed-ai/.env.example` documents the expected variable names.
 
-Remaining service definitions, network setup, and broker topology will firm up after [ADR-0002](../05-decisions/0002-event-broker.md) closes.
+Remaining broker topology, plus any service definitions and network setup not already covered by [ADR-0009](../05-decisions/0009-worker-fleet-topology.md), will firm up after [ADR-0002](../05-decisions/0002-event-broker.md) closes.

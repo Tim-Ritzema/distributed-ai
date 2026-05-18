@@ -75,6 +75,7 @@ These are documented here at the conceptual level. Mechanics live in the Elixir/
 - 🟢 [ADR-0001](../05-decisions/0001-control-plane-language.md) — Hybrid Elixir/Phoenix control plane + Python AI workers.
 - 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — pgvector in Postgres for memory embeddings.
 - 🟢 [ADR-0007](../05-decisions/0007-persistent-state-postgres.md) — Postgres for durable app state.
+- 🟢 [ADR-0009](../05-decisions/0009-worker-fleet-topology.md) — Worker fleet topology (three-host split).
 
 ## Open Questions
 

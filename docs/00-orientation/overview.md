@@ -6,7 +6,7 @@ Build a self-hosted personal AI assistant for the Ritzema family — Tim, Laurie
 
 ## What this is
 
-A single-household system, intended to be operated and maintained by the household itself. Compute lives on hardware Tim owns: a Mac Studio in the garage as the brain (initially); `mac-mini-1` as the Postgres + pgvector database host; Raspberry Pis with cameras as static installs and avatars; mobile phones and laptops as personal clients.
+A single-household system, intended to be operated and maintained by the household itself. Compute lives on hardware Tim owns: `mac-mini-2` hosts the Brain (control plane + agent runtime); the Mac Studio in the garage runs the Python AI worker tier (FastAPI worker service, Ollama, model runtimes); `mac-mini-1` is the Postgres + pgvector database host; Raspberry Pis with cameras are static installs and avatars; mobile phones and laptops are personal clients. See [ADR-0009](../05-decisions/0009-worker-fleet-topology.md).
 
 The assistant is **family-aware from day one**. Even before Laurie or the kids onboard, the data model, identity layer, privacy tiers, and capability checks are already in place. Phase 0 is "single active user, family-aware foundation," not "single-user architecture, retrofit later."
 

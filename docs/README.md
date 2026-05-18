@@ -31,10 +31,11 @@ A self-hosted, family-scoped personal AI assistant for the Ritzema family. Runs 
 | Postgres is the source of truth for durable app state | [ADR-0007](05-decisions/0007-persistent-state-postgres.md) |
 | pgvector in Postgres is the vector store for memory embeddings | [ADR-0003](05-decisions/0003-vector-store.md) |
 | Hybrid Elixir/Phoenix control plane + Python AI workers (LiveView excluded; SvelteKit UI) | [ADR-0001](05-decisions/0001-control-plane-language.md) |
+| Worker fleet topology: DB on `mac-mini-1`, Brain on `mac-mini-2`, FastAPI worker service + AI model runtimes on Mac Studio | [ADR-0009](05-decisions/0009-worker-fleet-topology.md) |
 
-Accepted technology choices are Postgres for durable app state, pgvector for memory embeddings, and the hybrid Elixir/Phoenix control plane + Python AI workers. Event broker, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider remain tracked as ADRs in [05-decisions/](05-decisions/).
+Accepted technology choices are Postgres for durable app state, pgvector for memory embeddings, the hybrid Elixir/Phoenix control plane + Python AI workers, and the three-host worker fleet topology. Event broker, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider remain tracked as ADRs in [05-decisions/](05-decisions/).
 
-**Next concrete step:** the [Pre-Phase 0 Phoenix control-plane spike](04-roadmap/phases.md) — a tightly-scoped vertical slice (health endpoint, capability-gated Phoenix Channel, server-pushed event to a SvelteKit client, Python worker over HTTP) that validates ADR-0001 in code without forcing ADR-0002 to close.
+**Next concrete step:** the [Pre-Phase 0 Phoenix control-plane spike](04-roadmap/phases.md) — a tightly-scoped vertical slice (health endpoint, capability-gated Phoenix Channel, server-pushed event to a SvelteKit client, Python worker → Brain call over HTTP, and a Brain → worker cross-host dispatch to a stub FastAPI endpoint on the Studio) that validates ADR-0001 and ADR-0009 in code without forcing ADR-0002 to close.
 
 ## Index
 
@@ -81,6 +82,7 @@ Accepted technology choices are Postgres for durable app state, pgvector for mem
 - [0006-workflow-engine.md](05-decisions/0006-workflow-engine.md) 🟣 Prefect leading
 - [0007-persistent-state-postgres.md](05-decisions/0007-persistent-state-postgres.md) 🟢 accepted
 - [0008-mobile-push-notifications.md](05-decisions/0008-mobile-push-notifications.md) 🔵 (Phase 3)
+- [0009-worker-fleet-topology.md](05-decisions/0009-worker-fleet-topology.md) 🟢 three-host split accepted
 
 ### 99-reference/
 - [reference-repos.md](99-reference/reference-repos.md) — local-vida and mia-sempre pointers

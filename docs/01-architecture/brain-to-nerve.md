@@ -20,7 +20,7 @@ L1 (Reflexes):         Hard-real-time reflexes        ~10–100 μs
 
 For this project, the layers map approximately to:
 
-- **L4** — Brain on the Mac Studio. Reasoning, planning, conversation, autonomous task execution. Operates at human-second timescale.
+- **L4** — Brain on `mac-mini-2`; FastAPI worker service + AI model runtimes on the Mac Studio ([ADR-0009](../05-decisions/0009-worker-fleet-topology.md); workflow-worker placement deferred to [ADR-0006](../05-decisions/0006-workflow-engine.md)). Reasoning, planning, conversation, autonomous task execution. Operates at human-second timescale.
 - **L3** — Device-local planning on capable clients. Mobile app turn coordination, avatar response timing, multi-step UI flows. Mostly absent day-one.
 - **L2** — Thin per-device skills. Pi face detection, wake-word recognition, gesture detection, camera framing. Day-one Pis run only this.
 - **L1** — Hard-real-time reflexes (camera framing servos, mute toggles, robot motor control). **Not in scope** until there's physical embodiment.

@@ -13,7 +13,7 @@ The system needs a workflow engine for multi-step Python AI/ML jobs ([02-domains
 - **Pros:**
   - Python-native. Same language as the AI/ML workers.
   - Mature retries, scheduling, parameterized runs, branching.
-  - Self-hosted server; runs comfortably alongside the Brain.
+  - Self-hosted server.
   - Good visibility (UI, logs, run history).
   - Pattern proven in local-vida.
   - Easy to define workflows close to the worker code.
@@ -71,9 +71,11 @@ If Prefect accepted:
 - Workflows defined as Python flows alongside the worker code they call.
 - Job state (queued → running → progressing → terminal) lives in Prefect's DB; durable results land in Postgres ([ADR-0007](0007-persistent-state-postgres.md)) referenced by `job_id`.
 - Progress events bridge from Prefect into the realtime plane via the Brain.
+- Host placement for Prefect Server and the workflow workers **remains open while this ADR is proposed**. It should close alongside the engine choice when ADR-0006 is accepted. [ADR-0009](0009-worker-fleet-topology.md) split the Brain (`mac-mini-2`) from the Python worker tier (Mac Studio) after this ADR was first drafted; "runs alongside the Brain" is no longer the assumed default.
 
 ## References
 
 - [02-domains/background-processing.md](../02-domains/background-processing.md) — workflow runner role.
 - [01-architecture/system-planes.md](../01-architecture/system-planes.md) — workflow orchestration plane.
 - [ADR-0001](0001-control-plane-language.md) — accepted hybrid Elixir+Python; makes Oban a real candidate for the Elixir side.
+- [ADR-0009](0009-worker-fleet-topology.md) — worker fleet topology; raises the host-placement question that this ADR must answer on acceptance.

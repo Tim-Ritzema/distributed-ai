@@ -13,6 +13,7 @@ Before full Phase 0 implementation, validate [ADR-0001](../05-decisions/0001-con
 - One Phoenix Channel with a capability-gated topic join.
 - One server-pushed event to a SvelteKit client.
 - One Python script or worker call into the Brain over HTTP.
+- One Brain → worker call: Phoenix dispatches a synchronous task to a stub FastAPI endpoint on the Studio and returns the response to the client. Exercises the cross-host dispatch path defined in [ADR-0009](../05-decisions/0009-worker-fleet-topology.md).
 - No NATS/JetStream requirement for the spike; [ADR-0002](../05-decisions/0002-event-broker.md) remains proposed, not accepted, until the broker boundary is decided explicitly.
 
 This spike is a learning-risk reducer, not a feature milestone. If Phoenix feels wrong after this slice, revisit [ADR-0001](../05-decisions/0001-control-plane-language.md) before building deeper.
@@ -23,7 +24,7 @@ The minimum viable system that's structurally correct from day one.
 
 **In scope:**
 
-- Brain (control plane + agent runtime) on the Mac Studio.
+- Brain (control plane + agent runtime) on `mac-mini-2`; FastAPI worker service + AI model runtimes on the Mac Studio (sync dispatch path per [ADR-0009](../05-decisions/0009-worker-fleet-topology.md); workflow-worker placement deferred to [ADR-0006](../05-decisions/0006-workflow-engine.md)).
 - Postgres (the accepted source of truth, [ADR-0007](../05-decisions/0007-persistent-state-postgres.md)).
 - Event broker (whichever wins [ADR-0002](../05-decisions/0002-event-broker.md)).
 - One personal chat client (web or mobile, Tim-owned), talking HTTP+WebSocket.
@@ -107,3 +108,4 @@ See [open-questions.md](open-questions.md) for the full live list. Highlights fo
 - 🟣 [ADR-0002](../05-decisions/0002-event-broker.md) — event broker. Needs to be accepted before full Phase 0, not before the Phoenix spike.
 - 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — vector store. **Closed** before memory embeddings ship: pgvector in Postgres.
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — workflow engine. Needs to close before any workflows ship (Phase 1).
+- 🟢 [ADR-0009](../05-decisions/0009-worker-fleet-topology.md) — worker fleet topology. **Closed** before the Pre-Phase 0 spike: three-host split (DB on `mac-mini-1`, Brain on `mac-mini-2`, FastAPI worker service + AI model runtimes on Mac Studio; workflow-worker placement remains ADR-0006's call).
