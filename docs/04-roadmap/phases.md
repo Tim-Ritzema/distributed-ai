@@ -12,6 +12,7 @@ Before full Phase 0 implementation, validate [ADR-0001](../05-decisions/0001-con
 - Postgres connection and one trivial migration/query.
 - One Phoenix Channel with a capability-gated topic join.
 - One server-pushed event to a SvelteKit client.
+- One SvelteKit SSR page served through the front door at `/` on `mac-mini-2`, alongside Phoenix at `/api/health` and `/socket`. Exercises the same-origin route ownership defined in [ADR-0010](../05-decisions/0010-web-frontend-hosting.md).
 - One Python script or worker call into the Brain over HTTP.
 - One Brain → worker call: Phoenix dispatches a synchronous task to a stub FastAPI endpoint on the Studio and returns the response to the client. Exercises the cross-host dispatch path defined in [ADR-0009](../05-decisions/0009-worker-fleet-topology.md).
 - No NATS/JetStream requirement for the spike; [ADR-0002](../05-decisions/0002-event-broker.md) remains proposed, not accepted, until the broker boundary is decided explicitly.
@@ -25,6 +26,7 @@ The minimum viable system that's structurally correct from day one.
 **In scope:**
 
 - Brain (control plane + agent runtime) on `mac-mini-2`; FastAPI worker service + AI model runtimes on the Mac Studio (sync dispatch path per [ADR-0009](../05-decisions/0009-worker-fleet-topology.md); workflow-worker placement deferred to [ADR-0006](../05-decisions/0006-workflow-engine.md)).
+- SvelteKit SSR web client on `mac-mini-2` behind one canonical origin per environment (`i.dinkerwupp.com` prod, `dev.dinkerwupp.com` dev) per [ADR-0010](../05-decisions/0010-web-frontend-hosting.md).
 - Postgres (the accepted source of truth, [ADR-0007](../05-decisions/0007-persistent-state-postgres.md)).
 - Event broker (whichever wins [ADR-0002](../05-decisions/0002-event-broker.md)).
 - One personal chat client (web or mobile, Tim-owned), talking HTTP+WebSocket.
@@ -109,3 +111,4 @@ See [open-questions.md](open-questions.md) for the full live list. Highlights fo
 - 🟢 [ADR-0003](../05-decisions/0003-vector-store.md) — vector store. **Closed** before memory embeddings ship: pgvector in Postgres.
 - 🟣 [ADR-0006](../05-decisions/0006-workflow-engine.md) — workflow engine. Needs to close before any workflows ship (Phase 1).
 - 🟢 [ADR-0009](../05-decisions/0009-worker-fleet-topology.md) — worker fleet topology. **Closed** before the Pre-Phase 0 spike: three-host split (DB on `mac-mini-1`, Brain on `mac-mini-2`, FastAPI worker service + AI model runtimes on Mac Studio; workflow-worker placement remains ADR-0006's call).
+- 🟢 [ADR-0010](../05-decisions/0010-web-frontend-hosting.md) — web frontend hosting. **Closed** before the Pre-Phase 0 spike adds a SvelteKit page: SvelteKit SSR on `mac-mini-2` via `@sveltejs/adapter-node` on Bun; one canonical origin per environment with HTTPS via DNS-01 ACME; Phoenix owns `/api/*` and `/socket`.

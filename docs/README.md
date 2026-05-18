@@ -13,7 +13,7 @@ A self-hosted, family-scoped personal AI assistant for the Ritzema family. Runs 
 
 ## Prototypes
 
-- [`../prototypes/avatar-lab/`](../prototypes/avatar-lab/) — static Wubblefazz avatar/perception client for `home.wubblefazz.com`.
+- [`../prototypes/avatar-lab/`](../prototypes/avatar-lab/) — static Wubblefazz avatar/perception client for `home.dinkerwupp.com`.
 
 ## Doc status legend
 
@@ -32,8 +32,9 @@ A self-hosted, family-scoped personal AI assistant for the Ritzema family. Runs 
 | pgvector in Postgres is the vector store for memory embeddings | [ADR-0003](05-decisions/0003-vector-store.md) |
 | Hybrid Elixir/Phoenix control plane + Python AI workers (LiveView excluded; SvelteKit UI) | [ADR-0001](05-decisions/0001-control-plane-language.md) |
 | Worker fleet topology: DB on `mac-mini-1`, Brain on `mac-mini-2`, FastAPI worker service + AI model runtimes on Mac Studio | [ADR-0009](05-decisions/0009-worker-fleet-topology.md) |
+| Web frontend hosting: SvelteKit SSR on `mac-mini-2` via `@sveltejs/adapter-node` on Bun; one canonical origin per environment (`i.dinkerwupp.com`, `dev.dinkerwupp.com`); Phoenix owns `/api/*` and `/socket` | [ADR-0010](05-decisions/0010-web-frontend-hosting.md) |
 
-Accepted technology choices are Postgres for durable app state, pgvector for memory embeddings, the hybrid Elixir/Phoenix control plane + Python AI workers, and the three-host worker fleet topology. Event broker, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider remain tracked as ADRs in [05-decisions/](05-decisions/).
+Accepted technology choices are Postgres for durable app state, pgvector for memory embeddings, the hybrid Elixir/Phoenix control plane + Python AI workers, the three-host worker fleet topology, and web frontend hosting (SvelteKit SSR on `mac-mini-2`). Event broker, realtime transport, device-telemetry protocol, workflow engine, and mobile push provider remain tracked as ADRs in [05-decisions/](05-decisions/).
 
 **Next concrete step:** the [Pre-Phase 0 Phoenix control-plane spike](04-roadmap/phases.md) — a tightly-scoped vertical slice (health endpoint, capability-gated Phoenix Channel, server-pushed event to a SvelteKit client, Python worker → Brain call over HTTP, and a Brain → worker cross-host dispatch to a stub FastAPI endpoint on the Studio) that validates ADR-0001 and ADR-0009 in code without forcing ADR-0002 to close.
 
@@ -83,6 +84,7 @@ Accepted technology choices are Postgres for durable app state, pgvector for mem
 - [0007-persistent-state-postgres.md](05-decisions/0007-persistent-state-postgres.md) 🟢 accepted
 - [0008-mobile-push-notifications.md](05-decisions/0008-mobile-push-notifications.md) 🔵 (Phase 3)
 - [0009-worker-fleet-topology.md](05-decisions/0009-worker-fleet-topology.md) 🟢 three-host split accepted
+- [0010-web-frontend-hosting.md](05-decisions/0010-web-frontend-hosting.md) 🟢 SvelteKit SSR on mac-mini-2 accepted
 
 ### 99-reference/
 - [reference-repos.md](99-reference/reference-repos.md) — local-vida and mia-sempre pointers

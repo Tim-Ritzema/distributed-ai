@@ -36,6 +36,10 @@ A WebSocket connection authenticates with a session token derived from the clien
 
 Because [ADR-0001](../05-decisions/0001-control-plane-language.md) accepted Elixir/Phoenix for the control plane, [ADR-0004](../05-decisions/0004-realtime-transport.md) now proposes **Phoenix Channels** as the realtime transport for SvelteKit clients; **plain WebSockets** remain the fallback. **Phoenix LiveView is explicitly excluded** — the UI runs on SvelteKit regardless.
 
+### Route ownership on the canonical origin
+
+Per [ADR-0010](../05-decisions/0010-web-frontend-hosting.md), browser clients reach the household app through one canonical origin per environment (`i.dinkerwupp.com` prod, `dev.dinkerwupp.com` dev), fronted by a reverse proxy on `mac-mini-2`. **SvelteKit SSR owns human-facing page routes** (`/`, `/chat`, `/memories`, `/projects`, `/devices`, `/settings`, `/login`, `/pair`, `/avatar/*`, `/admin/*`, framework assets). **Phoenix owns `/api/*`** (including all auth endpoints under `/api/auth/*`) **and `/socket`**. SvelteKit does not expose a stable public system API via `+server.ts`; durable business logic and capability enforcement live in Phoenix. The transport rules above are unchanged — this is route ownership, not new transport.
+
 ### Device telemetry (Pis / IoT)
 
 Pis publishing high-volume perception or sensor data probably want a purpose-built telemetry protocol rather than HTTP or WebSockets. **MQTT is favored** ([ADR-0005](../05-decisions/0005-device-telemetry-protocol.md)) for QoS levels, lossy-network resilience, and low overhead, but the decision isn't final.
