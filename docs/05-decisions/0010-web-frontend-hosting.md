@@ -1,6 +1,6 @@
 # ADR-0010: Web frontend hosting
 
-**Status:** 🟢 accepted (SvelteKit SSR on `mac-mini-2` via `@sveltejs/adapter-node` on Bun; HTTPS via DNS-01 ACME for both `i.dinkerwupp.com` and `dev.dinkerwupp.com`; Phoenix owns `/api/*` and `/socket`; reverse-proxy software, session mechanism, and dev/prod data isolation deferred)
+**Status:** 🟢 accepted (SvelteKit SSR on `mac-mini-2` via `@sveltejs/adapter-node` on Bun; HTTPS via DNS-01 ACME for both `i.dinkerwupp.com` and `dev.dinkerwupp.com`; Phoenix owns `/api/*` and `/socket`; session mechanism and dev/prod data isolation deferred — reverse-proxy software closed by [ADR-0011](0011-reverse-proxy.md))
 
 ## Context
 
@@ -11,7 +11,7 @@ What is left unspecified is the host placement of the SvelteKit runtime itself, 
 - The Pre-Phase 0 Phoenix spike ([phases.md](../04-roadmap/phases.md)) will push one server event to a SvelteKit client. There needs to be a SvelteKit runtime *somewhere* before that line of code can run end-to-end.
 - The family-facing web UI is the most visible reliability surface. If it goes down when the Studio reboots, the household experience is "the system is broken," even though the Brain and DB are fine.
 
-This ADR closes host placement, route ownership, runtime shape, and the front-door environments. It defers the choice of reverse-proxy software, the exact session/cookie mechanism, and dev/prod data isolation — each with a trigger to close.
+This ADR closes host placement, route ownership, runtime shape, and the front-door environments. It defers the choice of reverse-proxy software, the exact session/cookie mechanism, and dev/prod data isolation — each with a trigger to close. (The reverse-proxy software deferral was subsequently closed by [ADR-0011](0011-reverse-proxy.md).)
 
 ## Options
 
@@ -102,7 +102,7 @@ These follow directly from the same-origin design and are decided here, not defe
 - **CSRF (SvelteKit form actions):** SvelteKit's built-in `csrf.checkOrigin` stays enabled with default settings.
 - **CSRF (Phoenix `/api/*` mutations):** any cookie-backed mutation on `/api/*` requires Phoenix-side CSRF protection. The exact mechanism (synchronizer token, double-submit, `SameSite=Strict` on a separate CSRF cookie, header-based for fetch-from-same-origin) closes with the deferred session/cookie decision; the *requirement* is decided here.
 - **WebSocket upgrade:** the reverse proxy must support HTTP/1.1 upgrade on `/socket`. Rules out static-file-only proxies; Caddy, nginx, and Traefik all qualify.
-- **Phoenix `check_origin`:** allow the full origins `https://i.dinkerwupp.com`, `https://dev.dinkerwupp.com`, and any temporary local origins (`http://192.168.1.173`, `http://mac-mini-2.local`) used during the spike.
+- **Phoenix `check_origin`:** allow the full origins `https://i.dinkerwupp.com` and `https://dev.dinkerwupp.com`. The temporary local origins `http://192.168.1.173` and `http://mac-mini-2.local` were intended for the **pre-Caddy / pre-HTTPS spike phase only**, when Phoenix was reachable on the LAN before DNS-01 ACME and the front door existed. Once [ADR-0011](0011-reverse-proxy.md) is in effect and Caddy fronts both hostnames over HTTPS, those temporary origins are **obsolete** and should not be carried into Phoenix's prod config — Caddy is name-bound to the two registered hostnames and is the only path into Phoenix.
 
 ### Environments
 
@@ -120,7 +120,7 @@ These follow directly from the same-origin design and are decided here, not defe
 
 Closed inside this ADR with triggers, not in separate ADRs unless they grow:
 
-- **Reverse-proxy software** (Caddy / nginx / Traefik / Apple's built-in nginx fork). Trigger to close: before the Pre-Phase 0 spike serves a SvelteKit page through the front door. Choice constrains the ACME client (see TLS subsection).
+- ~~**Reverse-proxy software** (Caddy / nginx / Traefik / Apple's built-in nginx fork). Trigger to close: before the Pre-Phase 0 spike serves a SvelteKit page through the front door. Choice constrains the ACME client (see TLS subsection).~~ **Closed by [ADR-0011](0011-reverse-proxy.md): Caddy v2 with `caddy-dns/cloudflare`.**
 - **Session/cookie mechanism** between browser ↔ SvelteKit SSR ↔ Phoenix (cookie-forward, internal service credential, browser-direct). Trigger to close: before any capability-gated UI ships.
 - **CSP (Content Security Policy).** Defer until mobile or external clients reach the front door.
 - **Dev/prod data isolation.** Trigger to close: before dev becomes a real workflow (i.e. before someone runs a destructive migration or seeds test data).
@@ -129,7 +129,7 @@ Closed inside this ADR with triggers, not in separate ADRs unless they grow:
 ## Consequences
 
 - [`01-architecture/physical-topology.md`](../01-architecture/physical-topology.md) hardware-roles table gains a "Web frontend (SvelteKit SSR, prod + dev environments)" row pinned to `mac-mini-2`. Migration paths gain a "front door / reverse proxy moves off the Brain" item. Network shape notes that the two canonical origins resolve to `mac-mini-2`'s DHCP-reserved LAN IP via local DNS overrides or public DNS records.
-- [`03-operations/deployment.md`](../03-operations/deployment.md) gains a "Current Web Frontend Host" section: SvelteKit SSR on `mac-mini-2` built with `pnpm build` against `@sveltejs/adapter-node`, running on Bun under launchd (fallback Node LTS); two named environments behind a single reverse proxy on `mac-mini-2` with HTTPS via DNS-01 ACME; `/health` owned by the reverse proxy, `/api/health` and `/api/session` owned by Phoenix; reverse-proxy software, session mechanism, and dev/prod data isolation explicitly deferred. The existing `prototypes/avatar-lab/` `home.dinkerwupp.com` S3 deploy is cross-referenced as independent of the assistant front door. `local-computer-control` provisioning gains: install Bun and pnpm on `mac-mini-2`; create DNS records for both hostnames; provision ACME credentials for the public DNS zone.
+- [`03-operations/deployment.md`](../03-operations/deployment.md) gains a "Current Web Frontend Host" section: SvelteKit SSR on `mac-mini-2` built with `pnpm build` against `@sveltejs/adapter-node`, running on Bun under launchd (fallback Node LTS); two named environments behind a single reverse proxy on `mac-mini-2` with HTTPS via DNS-01 ACME; `/health` owned by the reverse proxy, `/api/health` and `/api/session` owned by Phoenix; session mechanism and dev/prod data isolation explicitly deferred. (Reverse-proxy software was originally deferred here too and has since been closed by [ADR-0011](0011-reverse-proxy.md): Caddy v2 with `caddy-dns/cloudflare`.) The existing `prototypes/avatar-lab/` `home.dinkerwupp.com` S3 deploy is cross-referenced as independent of the assistant front door. `local-computer-control` provisioning gains: install Bun and pnpm on `mac-mini-2`; create DNS records for both hostnames; provision ACME credentials for the public DNS zone.
 - [`04-roadmap/phases.md`](../04-roadmap/phases.md) Phase 0 "In scope" gains "SvelteKit SSR web client on `mac-mini-2` behind one canonical origin per environment." Pre-Phase 0 spike gains a line: one SvelteKit SSR page served through the front door at `/`, alongside Phoenix at `/api/health` and `/socket`.
 - [`01-architecture/api-and-transport.md`](../01-architecture/api-and-transport.md) gains a short paragraph on route ownership: `/api/*` and `/socket` are Phoenix's; page routes are SvelteKit SSR's; same canonical origin per environment. No transport rules change.
 - [`docs/README.md`](../README.md) accepted-decisions table gains a new row for ADR-0010; the prose summary adds "web frontend hosting" to the list of accepted technology choices; the ADR index entry is marked accepted.

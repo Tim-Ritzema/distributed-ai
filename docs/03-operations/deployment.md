@@ -59,9 +59,19 @@ Two named environments behind a single reverse proxy on `mac-mini-2`:
 - Production: `https://i.dinkerwupp.com`.
 - Development: `https://dev.dinkerwupp.com`.
 
+**Upstream port convention** (referenced from [ADR-0011](../05-decisions/0011-reverse-proxy.md) — the Caddyfile and per-environment launchd plists must agree on these):
+
+| Upstream | Bind | Launchd / runtime contract |
+|---|---|---|
+| SvelteKit prod | `127.0.0.1:3000` | `HOST=127.0.0.1 PORT=3000` in the prod launchd plist's `EnvironmentVariables`. **Both `HOST` and `PORT` are required** — `adapter-node` defaults `HOST` to `0.0.0.0`, so omitting it would bind the LAN interface and contradict ADR-0010's loopback-only rule. |
+| SvelteKit dev | `127.0.0.1:3001` | `HOST=127.0.0.1 PORT=3001` in the dev launchd plist's `EnvironmentVariables`. Same `HOST` requirement applies. |
+| Phoenix | `127.0.0.1:4000` | Phoenix is configured to bind `127.0.0.1:4000` in `config/runtime.exs` (`http: [ip: {127, 0, 0, 1}, port: 4000]`) — not via env var. **Single shared process today** — both `i.` and `dev.` Host-header routes proxy `/api/*` and `/socket` here. Whether Phoenix splits into per-environment processes (on, e.g., `:4000` and `:4001`) is part of ADR-0010's deferred dev/prod data isolation decision; the Caddyfile changes when that closes. |
+
+Phoenix and SvelteKit both bind `127.0.0.1` only — they are not reachable except through Caddy. `local-computer-control` is responsible for setting `HOST` and `PORT` in each SvelteKit plist; `distributed-ai` is responsible for keeping Phoenix's bind config pointed at `127.0.0.1`.
+
 Both hostnames resolve to `mac-mini-2`'s DHCP-reserved LAN IP (currently `192.168.1.173`) via local DNS overrides (router / Pi-hole / hosts file) or public DNS A-records pointing at the private IP. Public-DNS-to-private-IP records can be blocked by router DNS-rebind protection; if that bites, fall back to local DNS overrides for on-LAN clients.
 
-HTTPS via DNS-01 ACME is required from day one — Google OAuth callbacks, `Secure` session cookies, and browser secure-context APIs (camera / mic for the avatar surface) all need it. Cert provisioning runs from the reverse proxy on `mac-mini-2`. The reverse-proxy software is deferred (Caddy / nginx / Traefik); whatever wins must support DNS-01 ACME and HTTP/1.1 upgrade for `/socket`.
+HTTPS via DNS-01 ACME is required from day one — Google OAuth callbacks, `Secure` session cookies, and browser secure-context APIs (camera / mic for the avatar surface) all need it. The reverse proxy is **Caddy v2 with the `caddy-dns/cloudflare` module**, supervised by launchd, per [ADR-0011](../05-decisions/0011-reverse-proxy.md). Cert issuance and renewal run from Caddy using DNS-01 against the Cloudflare-hosted `dinkerwupp.com` zone. The Cloudflare API token Caddy uses is a **separate, scoped token** (`Zone:DNS:Edit` + `Zone:Zone:Read`, restricted to `dinkerwupp.com`), never the broader token in `distributed-ai/.env`.
 
 Health endpoints:
 
@@ -71,11 +81,11 @@ Health endpoints:
 
 Auth routes: Phoenix owns all of `/api/auth/*` including email/password login, OAuth `start` / `callback`, session, and logout. Google OAuth callbacks `https://i.dinkerwupp.com/api/auth/google/callback` and `https://dev.dinkerwupp.com/api/auth/google/callback` must both be registered in the Google Cloud OAuth client; registration is owned by the account holder.
 
-`local-computer-control` owns: installing Bun and pnpm on `mac-mini-2`; provisioning launchd services for the SvelteKit prod and dev runtimes plus the reverse proxy; creating DNS records (or local DNS overrides) for both hostnames; provisioning ACME credentials for the public DNS zone. `distributed-ai` owns the SvelteKit application source, route ownership, environment-variable convention (`PUBLIC_*` browser-visible, `$env/static/private` build-time-fixed, `$env/dynamic/private` for launchd-provisioned runtime secrets), and the contract with Phoenix `/api/*` and `/socket`.
+`local-computer-control` owns: installing Bun and pnpm on `mac-mini-2`; installing Caddy v2 with the `caddy-dns/cloudflare` module compiled in (vanilla `brew install caddy` is insufficient — it ships without DNS provider modules; use `xcaddy build` or pull a known-good build that bundles the module); provisioning launchd services for the SvelteKit prod and dev runtimes plus Caddy; creating DNS records (or local DNS overrides) for both hostnames; provisioning a scoped Cloudflare API token for Caddy at a read-protected path consumed by the Caddy launchd plist (not in `distributed-ai/.env`); configuring firewall rules to expose only `:80` (redirect to `:443`) and `:443` on the LAN interface. `distributed-ai` owns the SvelteKit application source, route ownership, environment-variable convention (`PUBLIC_*` browser-visible, `$env/static/private` build-time-fixed, `$env/dynamic/private` for launchd-provisioned runtime secrets), the Caddyfile source, and the contract with Phoenix `/api/*` and `/socket`.
 
 The existing `prototypes/avatar-lab/` `home.dinkerwupp.com` S3/CloudFront deploy is independent of the assistant front door and is not moved to `mac-mini-2` by ADR-0010.
 
-Deferred (with triggers in ADR-0010): reverse-proxy software choice, session/cookie mechanism, CSP, dev/prod data isolation, public ingress + mTLS + harder TLS policy.
+Deferred (with triggers in ADR-0010): session/cookie mechanism, CSP, dev/prod data isolation, public ingress + mTLS + harder TLS policy.
 
 ## Secrets
 
