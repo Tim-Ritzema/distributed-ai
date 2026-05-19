@@ -67,6 +67,7 @@ Accepted technology choices are Postgres for durable app state, pgvector for mem
 - [background-processing.md](02-domains/background-processing.md) — workflow role and lifecycle
 
 ### 03-operations/
+- [caddy.md](03-operations/caddy.md) — Caddy build, Cloudflare token, validation, and launchd handoff runbook
 - [deployment.md](03-operations/deployment.md) 🟡
 - [observability.md](03-operations/observability.md) 🟡
 

@@ -71,7 +71,7 @@ Phoenix and SvelteKit both bind `127.0.0.1` only — they are not reachable exce
 
 Both hostnames resolve to `mac-mini-2`'s DHCP-reserved LAN IP (currently `192.168.1.173`) via local DNS overrides (router / Pi-hole / hosts file) or public DNS A-records pointing at the private IP. Public-DNS-to-private-IP records can be blocked by router DNS-rebind protection; if that bites, fall back to local DNS overrides for on-LAN clients.
 
-HTTPS via DNS-01 ACME is required from day one — Google OAuth callbacks, `Secure` session cookies, and browser secure-context APIs (camera / mic for the avatar surface) all need it. The reverse proxy is **Caddy v2 with the `caddy-dns/cloudflare` module**, supervised by launchd, per [ADR-0011](../05-decisions/0011-reverse-proxy.md). Cert issuance and renewal run from Caddy using DNS-01 against the Cloudflare-hosted `dinkerwupp.com` zone. The Cloudflare API token Caddy uses is a **separate, scoped token** (`Zone:DNS:Edit` + `Zone:Zone:Read`, restricted to `dinkerwupp.com`), never the broader token in `distributed-ai/.env`.
+HTTPS via DNS-01 ACME is required from day one — Google OAuth callbacks, `Secure` session cookies, and browser secure-context APIs (camera / mic for the avatar surface) all need it. The reverse proxy is **Caddy v2 with the `caddy-dns/cloudflare` module**, supervised by launchd, per [ADR-0011](../05-decisions/0011-reverse-proxy.md). Cert issuance and renewal run from Caddy using DNS-01 against the Cloudflare-hosted `dinkerwupp.com` zone. The Cloudflare API token Caddy uses is a **separate, scoped token** (`Zone:DNS:Edit` + `Zone:Zone:Read`, restricted to `dinkerwupp.com`), never the broader token in `distributed-ai/.env`. See [caddy.md](caddy.md) for the setup and validation runbook.
 
 Health endpoints:
 

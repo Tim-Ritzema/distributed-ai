@@ -1,0 +1,66 @@
+{
+	email tdritzema+caddy@gmail.com
+}
+
+# local-computer-control supplies CADDY_CLOUDFLARE_API_TOKEN at runtime.
+
+(tls_cloudflare) {
+	tls {
+		dns cloudflare {env.CADDY_CLOUDFLARE_API_TOKEN}
+	}
+
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	encode zstd gzip
+}
+
+i.dinkerwupp.com {
+	import tls_cloudflare
+
+	handle /_health* {
+		respond 404
+	}
+
+	handle /health {
+		rewrite * /_health
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	@socket path /socket /socket/*
+	handle @socket {
+		reverse_proxy 127.0.0.1:4000
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:4000
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:3000
+	}
+}
+
+dev.dinkerwupp.com {
+	import tls_cloudflare
+
+	handle /_health* {
+		respond 404
+	}
+
+	handle /health {
+		rewrite * /_health
+		reverse_proxy 127.0.0.1:3001
+	}
+
+	@socket path /socket /socket/*
+	handle @socket {
+		reverse_proxy 127.0.0.1:4000
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:4000
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:3001
+	}
+}
