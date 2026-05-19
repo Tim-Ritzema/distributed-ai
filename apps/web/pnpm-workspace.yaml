@@ -1,5 +1,3 @@
-allowBuilds:
-  '@prisma/client': false
-  '@tailwindcss/oxide': true
-  better-sqlite3: false
-  esbuild: true
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - esbuild
